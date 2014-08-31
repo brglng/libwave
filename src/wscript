@@ -1,0 +1,53 @@
+#!python
+# encoding: utf-8
+
+import waflib
+
+outlib = 'wave'
+
+sources = """
+    wave.c
+""".split()
+
+include_dirs = """
+    ../include
+""".split()
+
+def options(opt):
+    opt.load('compiler_c')
+    opt.add_option('--debug', action='store_true', dest='debug',
+                   help='configure as debug version')
+    opt.add_option('--shared-lib', action='store_true', dest='shared_lib',
+                   help='configure as shared library rather than static library')
+
+def configure(conf):
+    conf.load('compiler_c')
+    CC_NAME = conf.env.CC_NAME
+    if CC_NAME == 'msvc':
+        conf.env.append_value('CFLAGS', ['/Wall'])
+        if conf.options.debug:
+            conf.env.append_value('CFLAGS', ['/Zi'])
+        else:
+            conf.env.append_value('CFLAGS', ['/O2'])
+    elif CC_NAME == 'gcc':
+        conf.env.append_value('CFLAGS', ['-W', '-Wall', '-Wno-multichar', '-std=c99'])
+        if conf.options.debug:
+            conf.env.append_value('CFLAGS', ['-g', '-O0'])
+        else:
+            conf.env.append_value('CFLAGS', ['-O2'])
+
+def build(bld):
+    if bld.options.shared_lib:
+        bld.shlib(
+            source      = sources,
+            target      = outlib,
+            includes    = include_dirs,
+            name        = 'libwave',
+        )
+    else:
+        bld.stlib(
+            source      = sources,
+            target      = outlib,
+            includes    = include_dirs,
+            name        = 'libwave',
+        )
