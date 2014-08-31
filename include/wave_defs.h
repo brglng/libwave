@@ -5,15 +5,6 @@
 extern "C" {
 #endif
 
-typedef signed char WaveInt8;
-typedef unsigned char WaveUInt8;
-typedef short WaveInt16;
-typedef unsigned short WaveUInt16;
-typedef long WaveInt32;
-typedef unsigned long WaveUInt32;
-typedef long long WaveInt64;
-typedef unsigned long long WaveUInt64;
-
 /* wave file format codes */
 #define WAVE_FORMAT_PCM             0x0001
 #define WAVE_FORMAT_IEEE_FLOAT      0x0003

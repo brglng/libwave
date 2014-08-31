@@ -45,7 +45,7 @@ void wave_parse_header(WaveFile* self)
         return;
     }
 
-    read_count = fread((WaveUInt8*)(&self->chunk.format_chunk) + WAVE_RIFF_HEADER_SIZE,
+    read_count = fread((uint8_t*)(&self->chunk.format_chunk) + WAVE_RIFF_HEADER_SIZE,
                        self->chunk.format_chunk.size, 1, self->fp);
     if (read_count != 1 ) {
         self->error_code = WAVE_ERROR_FORMAT;
@@ -68,7 +68,7 @@ void wave_parse_header(WaveFile* self)
     }
 
     if (self->chunk.fact_chunk.id == WAVE_FACT_CHUNK_ID) {
-        read_count = fread((WaveUInt8*)(&self->chunk.fact_chunk) + WAVE_RIFF_HEADER_SIZE,
+        read_count = fread((uint8_t*)(&self->chunk.fact_chunk) + WAVE_RIFF_HEADER_SIZE,
                            self->chunk.fact_chunk.size, 1, self->fp);
         if (read_count != 1) {
             self->error_code = WAVE_ERROR_FORMAT;
@@ -301,8 +301,8 @@ static __inline size_t wave_calc_container_size(size_t sample_size)
 size_t wave_read(void** buffers, size_t count, WaveFile* wave)
 {
     size_t read_count;
-    WaveUInt8* buffer;
-    WaveUInt16 n_channels = wave_get_n_channels(wave);
+    uint8_t* buffer;
+    uint16_t n_channels = wave_get_n_channels(wave);
     size_t sample_size = wave_get_sample_size(wave);
     size_t container_size = wave_calc_container_size(sample_size);
     size_t i, j, k;
@@ -346,17 +346,17 @@ size_t wave_read(void** buffers, size_t count, WaveFile* wave)
         for (j = 0; j < read_count / n_channels; ++j) {
 #ifdef WAVE_ENDIAN_LITTLE
             for (k = 0; k < sample_size; ++k) {
-                ((WaveUInt8*)buffers[i])[j*container_size + k] = buffer[j*n_channels*sample_size + i*sample_size + k];
+                ((uint8_t*)buffers[i])[j*container_size + k] = buffer[j*n_channels*sample_size + i*sample_size + k];
             }
 
             /* sign extension */
-            if (((WaveUInt8*)buffers[i])[j*container_size + k-1] & 0x80) {
+            if (((uint8_t*)buffers[i])[j*container_size + k-1] & 0x80) {
                 for (; k < container_size; ++k) {
-                    ((WaveUInt8*)buffers[i])[j*container_size + k] = 0xff;
+                    ((uint8_t*)buffers[i])[j*container_size + k] = 0xff;
                 }
             } else {
                 for (; k < container_size; ++k) {
-                    ((WaveUInt8*)buffers[i])[j*container_size + k] = 0x00;
+                    ((uint8_t*)buffers[i])[j*container_size + k] = 0x00;
                 }
             }
 #endif
@@ -373,8 +373,8 @@ size_t wave_read(void** buffers, size_t count, WaveFile* wave)
 size_t wave_write(void** buffers, size_t count, WaveFile* wave)
 {
     size_t write_count;
-    WaveUInt8* buffer;
-    WaveUInt16 n_channels = wave_get_n_channels(wave);
+    uint8_t* buffer;
+    uint16_t n_channels = wave_get_n_channels(wave);
     size_t sample_size = wave_get_sample_size(wave);
     size_t container_size = wave_calc_container_size(sample_size);
     size_t i, j, k;
@@ -410,7 +410,7 @@ size_t wave_write(void** buffers, size_t count, WaveFile* wave)
         for (j = 0; j < count; ++j) {
 #ifdef WAVE_ENDIAN_LITTLE
             for (k = 0; k < sample_size; ++k) {
-                buffer[j*n_channels*sample_size + i*sample_size + k] = ((WaveUInt8*)buffers[i])[j*container_size + k];
+                buffer[j*n_channels*sample_size + i*sample_size + k] = ((uint8_t*)buffers[i])[j*container_size + k];
             }
 #endif
         }
@@ -522,7 +522,7 @@ int wave_flush(WaveFile* wave)
     return ret;
 }
 
-void wave_set_format(WaveFile* self, WaveUInt16 format)
+void wave_set_format(WaveFile* self, uint16_t format)
 {
     if (self->mode[0] == 'r') {
         self->error_code = WAVE_ERROR_MODE;
@@ -553,7 +553,7 @@ void wave_set_format(WaveFile* self, WaveUInt16 format)
     /* self->error_code is set by wave_write_header */
 }
 
-void wave_set_n_channels(WaveFile* self, WaveUInt16 n_channels)
+void wave_set_n_channels(WaveFile* self, uint16_t n_channels)
 {
     if (self->mode[0] == 'r') {
         self->error_code = WAVE_ERROR_MODE;
@@ -575,7 +575,7 @@ void wave_set_n_channels(WaveFile* self, WaveUInt16 n_channels)
     /* self->error_code is set by wave_write_header */
 }
 
-void wave_set_sample_rate(WaveFile* self, WaveUInt32 sample_rate)
+void wave_set_sample_rate(WaveFile* self, uint32_t sample_rate)
 {
     if (self->mode[0] == 'r') {
         self->error_code = WAVE_ERROR_MODE;
@@ -592,7 +592,7 @@ void wave_set_sample_rate(WaveFile* self, WaveUInt32 sample_rate)
     /* self->error_code is set by wave_write_header */
 }
 
-void wave_set_valid_bits_per_sample(WaveFile* self, WaveUInt16 bits)
+void wave_set_valid_bits_per_sample(WaveFile* self, uint16_t bits)
 {
     if (self->mode[0] == 'r') {
         self->error_code = WAVE_ERROR_MODE;
@@ -634,18 +634,18 @@ void wave_set_sample_size(WaveFile* self, size_t sample_size)
         return;
     }
 
-    self->chunk.format_chunk.block_align = (WaveUInt16)(sample_size * self->chunk.format_chunk.n_channels);
+    self->chunk.format_chunk.block_align = (uint16_t)(sample_size * self->chunk.format_chunk.n_channels);
     self->chunk.format_chunk.avg_bytes_per_sec = self->chunk.format_chunk.block_align * self->chunk.format_chunk.sample_rate;
-    self->chunk.format_chunk.bits_per_sample = (WaveUInt16)(sample_size * 8);
+    self->chunk.format_chunk.bits_per_sample = (uint16_t)(sample_size * 8);
     if (self->chunk.format_chunk.format_tag == WAVE_FORMAT_EXTENSIBLE) {
-        self->chunk.format_chunk.valid_bits_per_sample = (WaveUInt16)(sample_size * 8);
+        self->chunk.format_chunk.valid_bits_per_sample = (uint16_t)(sample_size * 8);
     }
 
     wave_write_header(self);
     /* self->error_code is set by wave_write_header */
 }
 
-void wave_set_channel_mask(WaveFile* self, WaveUInt32 channel_mask)
+void wave_set_channel_mask(WaveFile* self, uint32_t channel_mask)
 {
     if (self->mode[0] == 'r') {
         self->error_code = WAVE_ERROR_MODE;
@@ -663,7 +663,7 @@ void wave_set_channel_mask(WaveFile* self, WaveUInt32 channel_mask)
     /* self->error_code is set by wave_write_header */
 }
 
-void wave_set_sub_format(WaveFile* self, WaveUInt16 sub_format)
+void wave_set_sub_format(WaveFile* self, uint16_t sub_format)
 {
     if (self->mode[0] == 'r') {
         self->error_code = WAVE_ERROR_MODE;
@@ -675,28 +675,28 @@ void wave_set_sub_format(WaveFile* self, WaveUInt16 sub_format)
         return;
     }
 
-    *((WaveUInt16*)&self->chunk.format_chunk.sub_format) = sub_format;
+    *((uint16_t*)&self->chunk.format_chunk.sub_format) = sub_format;
 
     wave_write_header(self);
     /* self->error_code is set by wave_write_header */
 }
 
-WaveUInt16 wave_get_format(WaveFile* self)
+uint16_t wave_get_format(WaveFile* self)
 {
     return self->chunk.format_chunk.format_tag;
 }
 
-WaveUInt16 wave_get_n_channels(WaveFile* self)
+uint16_t wave_get_n_channels(WaveFile* self)
 {
     return self->chunk.format_chunk.n_channels;
 }
 
-WaveUInt32 wave_get_sample_rate(WaveFile* self)
+uint32_t wave_get_sample_rate(WaveFile* self)
 {
     return self->chunk.format_chunk.sample_rate;
 }
 
-WaveUInt16 wave_get_valid_bits_per_sample(WaveFile* self)
+uint16_t wave_get_valid_bits_per_sample(WaveFile* self)
 {
     if (self->chunk.format_chunk.format_tag != WAVE_FORMAT_EXTENSIBLE) {
         return self->chunk.format_chunk.bits_per_sample;
@@ -715,14 +715,14 @@ size_t wave_get_length(WaveFile* self)
     return self->chunk.data_chunk.size / (self->chunk.format_chunk.block_align);
 }
 
-WaveUInt32 wave_get_channel_mask(WaveFile* self)
+uint32_t wave_get_channel_mask(WaveFile* self)
 {
     return self->chunk.format_chunk.channel_mask;
 }
 
-WaveUInt16 wave_get_sub_format(WaveFile* self)
+uint16_t wave_get_sub_format(WaveFile* self)
 {
-    return *((WaveUInt16*)&self->chunk.format_chunk.sub_format);
+    return *((uint16_t*)&self->chunk.format_chunk.sub_format);
 }
 
 WaveError wave_get_last_error(WaveFile* self)

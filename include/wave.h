@@ -24,6 +24,8 @@
 extern "C" {
 #endif
 
+#include <stddef.h>
+#include <stdint.h>
 #include "wave_defs.h"
 
 WaveFile*   wave_open(char* filename, char* mode);
@@ -95,7 +97,7 @@ int         wave_flush(WaveFile* wave);
  *  remarks:        All data will be cleared after the call
  *                  {wave_get_last_error} can be used to get the error code if there is an error.
  */
-void        wave_set_format(WaveFile* self, WaveUInt16 format);
+void        wave_set_format(WaveFile* self, uint16_t format);
 
 /** function:       wave_set_n_channels
  *  description:    Set the number of channels
@@ -106,7 +108,7 @@ void        wave_set_format(WaveFile* self, WaveUInt16 format);
  *  remarks:        All data will be cleared after the call
  *                  {wave_get_last_error} can be used to get the error code if there is an error.
  */
-void        wave_set_n_channels(WaveFile* self, WaveUInt16 n_channels);
+void        wave_set_n_channels(WaveFile* self, uint16_t n_channels);
 
 /** function:       wave_set_sample_rate
  *  description:    Set the sample rate
@@ -117,7 +119,7 @@ void        wave_set_n_channels(WaveFile* self, WaveUInt16 n_channels);
  *  remarks:        All data will be cleared after the call
  *                  {wave_get_last_error} can be used to get the error code if there is an error.
  */
-void        wave_set_sample_rate(WaveFile* self, WaveUInt16 sample_rate);
+void        wave_set_sample_rate(WaveFile* self, uint16_t sample_rate);
 
 /** function:       wave_set_valid_bits_per_sample
  *  description:    get the number of valid bits per sample
@@ -129,7 +131,7 @@ void        wave_set_sample_rate(WaveFile* self, WaveUInt16 sample_rate);
  *                  All data will be cleared after the call.
  *                  {wave_get_last_error} can be used to get the error code if there is an error.
  */
-void        wave_set_valid_bits_per_sample(WaveFile* self, WaveUInt16 bits);
+void        wave_set_valid_bits_per_sample(WaveFile* self, uint16_t bits);
 
 /** function:       wave_set_sample_size
  *  description:    Set the size (in bytes) per sample
@@ -146,10 +148,10 @@ void        wave_set_sample_size(WaveFile* self, size_t sample_size);
 
 /**
  */
-WaveUInt16  wave_get_format(WaveFile* self);
-WaveUInt16  wave_get_n_channels(WaveFile* self);
-WaveUInt32  wave_get_sample_rate(WaveFile* self);
-WaveUInt32  wave_get_valid_bits_per_sample(WaveFile* self);
+uint16_t  wave_get_format(WaveFile* self);
+uint16_t  wave_get_n_channels(WaveFile* self);
+uint32_t  wave_get_sample_rate(WaveFile* self);
+uint32_t  wave_get_valid_bits_per_sample(WaveFile* self);
 size_t      wave_get_sample_size(WaveFile* self);
 size_t      wave_get_length(WaveFile* self);
 
