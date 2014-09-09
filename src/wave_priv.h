@@ -10,7 +10,7 @@
 extern "C" {
 #endif
 
-#if defined(i386) || defined(__i386) || defined(__i386__) || defined(_M_I86) || defined(_M_IX86) || defined(_X86_) || defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64) || defined(_M_X64) || defined(_M_AMD64)
+#if defined(__i386__) || defined(_M_I86) || defined(_X86_) || defined(__amd64__) || defined(__x86_64__) || defined(_M_X64)
 #define WAVE_ENDIAN_LITTLE
 #endif
 
@@ -91,6 +91,8 @@ struct _WaveFile {
     char*               mode;
     WaveError           error_code;
     WaveMasterChunk     chunk;
+    uint8_t*            tmp;
+    size_t              tmp_size;
 };
 
 #ifdef __cplusplus

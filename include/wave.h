@@ -28,6 +28,15 @@ extern "C" {
 #include <stdint.h>
 #include "wave_defs.h"
 
+/** function:       wave_open
+ *  description:    Open a wave file
+ *  parameters:
+ *      filename:   The name of the wave file
+ *      mode:       The mode for open (same as fopen)
+ *  return:         NULL if the memory allocation for the WaveFile object failed.
+ *                  Non-NULL means the memory allocation succeeded, but there can be other errors,
+ *                  which can be got using wave_get_last_error or wave_error.
+ */
 WaveFile*   wave_open(char* filename, char* mode);
 int         wave_close(WaveFile* wave);
 WaveFile*   wave_reopen(char* filename, char* mode, WaveFile* wave);
@@ -99,16 +108,16 @@ int         wave_flush(WaveFile* wave);
  */
 void        wave_set_format(WaveFile* self, uint16_t format);
 
-/** function:       wave_set_n_channels
+/** function:       wave_set_num_channels
  *  description:    Set the number of channels
  *  parameters:
  *      self:           The WaveFile object
- *      n_channels:     The number of channels
+ *      num_channels:   The number of channels
  *  return:         None
  *  remarks:        All data will be cleared after the call
  *                  {wave_get_last_error} can be used to get the error code if there is an error.
  */
-void        wave_set_n_channels(WaveFile* self, uint16_t n_channels);
+void        wave_set_num_channels(WaveFile* self, uint16_t num_channels);
 
 /** function:       wave_set_sample_rate
  *  description:    Set the sample rate
@@ -119,7 +128,7 @@ void        wave_set_n_channels(WaveFile* self, uint16_t n_channels);
  *  remarks:        All data will be cleared after the call
  *                  {wave_get_last_error} can be used to get the error code if there is an error.
  */
-void        wave_set_sample_rate(WaveFile* self, uint16_t sample_rate);
+void        wave_set_sample_rate(WaveFile* self, uint32_t sample_rate);
 
 /** function:       wave_set_valid_bits_per_sample
  *  description:    get the number of valid bits per sample
@@ -149,9 +158,9 @@ void        wave_set_sample_size(WaveFile* self, size_t sample_size);
 /**
  */
 uint16_t  wave_get_format(WaveFile* self);
-uint16_t  wave_get_n_channels(WaveFile* self);
+uint16_t  wave_get_num_channels(WaveFile* self);
 uint32_t  wave_get_sample_rate(WaveFile* self);
-uint32_t  wave_get_valid_bits_per_sample(WaveFile* self);
+uint16_t  wave_get_valid_bits_per_sample(WaveFile* self);
 size_t      wave_get_sample_size(WaveFile* self);
 size_t      wave_get_length(WaveFile* self);
 

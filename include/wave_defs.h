@@ -19,8 +19,6 @@ enum _WaveError {
     WAVE_ERROR_MODE,        /* incorrect mode when opening the wave file or calling mode-specific API */
     WAVE_ERROR_MALLOC,      /* error when {wave} called malloc */
     WAVE_ERROR_STDIO,       /* error when {wave} called a stdio function */
-    WAVE_ERROR_POS,         /* the file pointer is not in the correct position
-                               This error should never occur unless there is a bug */
     WAVE_ERROR_PARAM,       /* incorrect parameter passed to the API function */
 };
 

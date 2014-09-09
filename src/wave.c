@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include <string.h>
 
 #include "wave.h"
@@ -260,13 +261,10 @@ WaveFile* wave_open(char* filename, char* mode)
         return NULL;
     }
 
+    wave->tmp = NULL;
+    wave->tmp_size = 0;
+
     wave_init(wave, filename, mode);
-
-    //if (wave->error_code != WAVE_SUCCESS) {
-    //    return NULL;
-    //}
-
-    //wave->error_code = WAVE_SUCCESS;
 
     return wave;
 }
@@ -277,6 +275,10 @@ int wave_close(WaveFile* wave)
 
     if (wave->error_code != WAVE_SUCCESS) {
         return EOF;
+    }
+
+    if (wave->tmp) {
+        free(wave->tmp);
     }
 
     free(wave);
@@ -291,9 +293,9 @@ WaveFile* wave_reopen(char* filename, char* mode, WaveFile* wave)
     return wave;
 }
 
-const static wave_container_sizes[5] = {0, 1, 2, 4, 4};
+const static int wave_container_sizes[5] = {0, 1, 2, 4, 4};
 
-static __inline size_t wave_calc_container_size(size_t sample_size)
+static inline size_t wave_calc_container_size(size_t sample_size)
 {
     return wave_container_sizes[sample_size];
 }
@@ -301,8 +303,7 @@ static __inline size_t wave_calc_container_size(size_t sample_size)
 size_t wave_read(void** buffers, size_t count, WaveFile* wave)
 {
     size_t read_count;
-    uint8_t* buffer;
-    uint16_t n_channels = wave_get_n_channels(wave);
+    uint16_t n_channels = wave_get_num_channels(wave);
     size_t sample_size = wave_get_sample_size(wave);
     size_t container_size = wave_calc_container_size(sample_size);
     size_t i, j, k;
@@ -329,15 +330,22 @@ size_t wave_read(void** buffers, size_t count, WaveFile* wave)
         return 0;
     }
 
-    buffer = malloc(n_channels * count * sample_size);
-    if (buffer == NULL) {
-        wave->error_code = WAVE_ERROR_MALLOC;
-        return 0;
+    if (wave->tmp_size < n_channels * count * sample_size || !wave->tmp) {
+        if (wave->tmp) {
+            free(wave->tmp);
+        }
+        wave->tmp_size = n_channels * count * sample_size;
+        wave->tmp = malloc(wave->tmp_size);
+        if (wave->tmp == NULL) {
+            wave->tmp_size = 0;
+            wave->error_code = WAVE_ERROR_MALLOC;
+            return 0;
+        }
     }
 
-    read_count = fread(buffer, sample_size, n_channels * count, wave->fp);
+
+    read_count = fread(wave->tmp, sample_size, n_channels * count, wave->fp);
     if (ferror(wave->fp)) {
-        free(buffer);
         wave->error_code = WAVE_ERROR_STDIO;
         return 0;
     }
@@ -346,7 +354,7 @@ size_t wave_read(void** buffers, size_t count, WaveFile* wave)
         for (j = 0; j < read_count / n_channels; ++j) {
 #ifdef WAVE_ENDIAN_LITTLE
             for (k = 0; k < sample_size; ++k) {
-                ((uint8_t*)buffers[i])[j*container_size + k] = buffer[j*n_channels*sample_size + i*sample_size + k];
+                ((uint8_t*)buffers[i])[j*container_size + k] = wave->tmp[j*n_channels*sample_size + i*sample_size + k];
             }
 
             /* sign extension */
@@ -363,8 +371,6 @@ size_t wave_read(void** buffers, size_t count, WaveFile* wave)
         }
     }
 
-    free(buffer);
-
     wave->error_code = WAVE_SUCCESS;
 
     return read_count / n_channels;
@@ -373,8 +379,7 @@ size_t wave_read(void** buffers, size_t count, WaveFile* wave)
 size_t wave_write(void** buffers, size_t count, WaveFile* wave)
 {
     size_t write_count;
-    uint8_t* buffer;
-    uint16_t n_channels = wave_get_n_channels(wave);
+    uint16_t n_channels = wave_get_num_channels(wave);
     size_t sample_size = wave_get_sample_size(wave);
     size_t container_size = wave_calc_container_size(sample_size);
     size_t i, j, k;
@@ -400,30 +405,34 @@ size_t wave_write(void** buffers, size_t count, WaveFile* wave)
         return 0;
     }
 
-    buffer = malloc(n_channels * count * sample_size);
-    if (buffer == NULL) {
-        wave->error_code = WAVE_ERROR_MALLOC;
-        return 0;
+    if (wave->tmp_size < n_channels * count * sample_size || !wave->tmp) {
+        if (wave->tmp) {
+            free(wave->tmp);
+        }
+        wave->tmp_size = n_channels * count * sample_size;
+        wave->tmp = malloc(wave->tmp_size);
+        if (wave->tmp == NULL) {
+            wave->tmp_size = 0;
+            wave->error_code = WAVE_ERROR_MALLOC;
+            return 0;
+        }
     }
 
     for (i = 0; i < n_channels; ++i) {
         for (j = 0; j < count; ++j) {
 #ifdef WAVE_ENDIAN_LITTLE
             for (k = 0; k < sample_size; ++k) {
-                buffer[j*n_channels*sample_size + i*sample_size + k] = ((uint8_t*)buffers[i])[j*container_size + k];
+                wave->tmp[j*n_channels*sample_size + i*sample_size + k] = ((uint8_t*)buffers[i])[j*container_size + k];
             }
 #endif
         }
     }
 
-    write_count = fwrite(buffer, sample_size, n_channels * count, wave->fp);
+    write_count = fwrite(wave->tmp, sample_size, n_channels * count, wave->fp);
     if (ferror(wave->fp)) {
-        free(buffer);
         wave->error_code = WAVE_ERROR_STDIO;
         return 0;
     }
-
-    free(buffer);
 
     wave->chunk.data_chunk.size += write_count * sample_size;
 
@@ -458,10 +467,8 @@ long int wave_tell(WaveFile* wave)
         return -1L;
     } else {
         size_t header_size = wave_get_header_size(wave);
-        if (pos < header_size) {
-            wave->error_code = WAVE_ERROR_POS;
-            return -1L;
-        }
+
+        assert(pos >= header_size);
 
         wave->error_code = WAVE_SUCCESS;
         return (pos - header_size) / (wave->chunk.format_chunk.block_align);
@@ -553,7 +560,7 @@ void wave_set_format(WaveFile* self, uint16_t format)
     /* self->error_code is set by wave_write_header */
 }
 
-void wave_set_n_channels(WaveFile* self, uint16_t n_channels)
+void wave_set_num_channels(WaveFile* self, uint16_t n_channels)
 {
     if (self->mode[0] == 'r') {
         self->error_code = WAVE_ERROR_MODE;
@@ -686,7 +693,7 @@ uint16_t wave_get_format(WaveFile* self)
     return self->chunk.format_chunk.format_tag;
 }
 
-uint16_t wave_get_n_channels(WaveFile* self)
+uint16_t wave_get_num_channels(WaveFile* self)
 {
     return self->chunk.format_chunk.n_channels;
 }
