@@ -16,7 +16,7 @@ cmake [-DDEBUG=1] -G "Unix Makefiles" ..
 make
 ```
 
-Windows using Visual Studio 2013
+Windows using Visual Studio 2013:
 
 ```sh
 mkdir build
@@ -24,7 +24,7 @@ cd build
 cmake [-DDEBUG=1] -G "Visual Studio 12" ..
 ```
 
-OS X using Xcode
+OS X using Xcode:
 
 ```sh
 mkdir build
