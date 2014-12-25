@@ -8,7 +8,7 @@ Build
 -----
 
 Linux/Cygwin/OS X using makefiles:
-    ```shell
+    ```sh
     mkdir build
     cd build
     cmake [-DDEBUG=1] -G "Unix Makefiles" ..
@@ -16,14 +16,14 @@ Linux/Cygwin/OS X using makefiles:
     ```
 
 Windows using Visual Studio 2013
-    ```shell
+    ```sh
     mkdir build
     cd build
     cmake [-DDEBUG=1] -G "Visual Studio 12" ..
     ```
 
 OS X using Xcode
-    ```shell
+    ```sh
     mkdir build
     cd build
     cmake [-DDEBUG=1] -G Xcode ..
