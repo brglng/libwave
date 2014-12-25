@@ -103,12 +103,12 @@ void blk_average(double* buf, int blksz, double* avg, size_t sample_cnt)
     }
 }
 
-static __inline double db(double amp)
+static inline double db(double amp)
 {
     return 20*log10(amp);
 }
 
-static __inline size_t container_size(size_t sample_size)
+static inline size_t container_size(size_t sample_size)
 {
     size_t ret = 1;
     int i = 0;
@@ -130,7 +130,7 @@ bool diff_file(char* in1name, char* in2name, char* outname)
     WaveFile* in2 = wave_open(in2name, "r");
     WaveFile* out = wave_open(outname, "w");
     size_t readlen1, readlen2, readlen;
-    int nch = wave_get_n_channels(in1);
+    int nch = wave_get_num_channels(in1);
     void** buf1;
     void** buf2;
     double** buf1_double;
@@ -160,7 +160,7 @@ bool diff_file(char* in1name, char* in2name, char* outname)
         return false;
     }
 
-    if (nch != wave_get_n_channels(in2) || wave_get_sample_rate(in1) != wave_get_sample_rate(in2)) {
+    if (nch != wave_get_num_channels(in2) || wave_get_sample_rate(in1) != wave_get_sample_rate(in2)) {
         printf("  diff failed!\n");
         return false;
     }
@@ -188,7 +188,7 @@ bool diff_file(char* in1name, char* in2name, char* outname)
     wave_set_format(out, WAVE_FORMAT_IEEE_FLOAT);
     wave_set_sample_size(out, 8);
     wave_set_sample_rate(out, wave_get_sample_rate(in1));
-    wave_set_n_channels(out, nch);
+    wave_set_num_channels(out, nch);
     printf("output file: %s\n", outname);
 
     do {
