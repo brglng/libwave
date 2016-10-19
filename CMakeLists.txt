@@ -49,21 +49,14 @@ install(
     DESTINATION include/${PROJECT_NAME}
 )
 
-if(${CMAKE_C_COMPILER_ID} STREQUAL "MSVC")
+if("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /Wall")
-    if(${DEBUG})
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /Zi")
-    else()
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /O2")
-    endif()
-elseif((${CMAKE_C_COMPILER_ID} STREQUAL "GNU") OR (${CMAKE_C_COMPILER_ID} STREQUAL "Clang"))
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -W -Wall -Wno-multichar -std=c99")
-    if(${DEBUG})
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0")
-    else()
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2")
-    endif()
-
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} /Zi")
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} /O2")
+elseif(("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU") OR ("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang"))
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -W -Wall -Wno-multichar -std=c11")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -g -O0")
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -O2")
 endif()
 
 add_subdirectory(
