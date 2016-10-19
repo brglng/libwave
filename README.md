@@ -12,7 +12,7 @@ Linux/Cygwin/OS X using makefiles:
 ```sh
 mkdir build
 cd build
-cmake [-DDEBUG=1] -G "Unix Makefiles" ..
+cmake [-DCMAKE_BUILD_TYPE=<Debug|Release>] -G "Unix Makefiles" ..
 make
 ```
 
@@ -21,7 +21,7 @@ Windows using Visual Studio 2013:
 ```sh
 mkdir build
 cd build
-cmake [-DDEBUG=1] -G "Visual Studio 12" ..
+cmake [-DCMAKE_BUILD_TYPE=<Debug|Release>] -G "Visual Studio 12" ..
 ```
 
 OS X using Xcode:
@@ -29,7 +29,7 @@ OS X using Xcode:
 ```sh
 mkdir build
 cd build
-cmake [-DDEBUG=1] -G Xcode ..
+cmake [-DCMAKE_BUILD_TYPE=<Debug|Release>] -G Xcode ..
 ```
 
 License
