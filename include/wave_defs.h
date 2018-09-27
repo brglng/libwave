@@ -12,7 +12,6 @@ extern "C" {
 #define WAVE_FORMAT_MULAW           0x0007
 #define WAVE_FORMAT_EXTENSIBLE      0xfffe
 
-typedef enum _WaveError WaveError;
 enum _WaveError {
     WAVE_SUCCESS,           /* no error */
     WAVE_ERROR_FORMAT,      /* not a wave file or unsupported wave format */
@@ -21,6 +20,7 @@ enum _WaveError {
     WAVE_ERROR_STDIO,       /* error when {wave} called a stdio function */
     WAVE_ERROR_PARAM,       /* incorrect parameter passed to the API function */
 };
+typedef enum _WaveError WaveError;
 
 typedef struct _WaveFile WaveFile;
 

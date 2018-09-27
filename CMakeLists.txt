@@ -20,15 +20,15 @@ set(WAVE_SOURCES
 set(WAVE_SOVERSION  0)
 set(WAVE_VERSION    0.1.0)
 
-include_directories(
-    ${WAVE_INCLUDES}
-)
-
 add_library(${PROJECT_NAME} SHARED ${WAVE_SOURCES})
 set_target_properties(${PROJECT_NAME}
     PROPERTIES
     VERSION                 ${WAVE_VERSION}
     SOVERSION               ${WAVE_SOVERSION}
+)
+target_include_directories(
+    ${PROJECT_NAME}
+    PUBLIC ${WAVE_INCLUDES}
 )
 
 add_library(${PROJECT_NAME}_static STATIC ${WAVE_SOURCES})
@@ -36,6 +36,10 @@ set_target_properties(${PROJECT_NAME}_static
     PROPERTIES
     VERSION                 ${WAVE_VERSION}
     SOVERSION               ${WAVE_SOVERSION}
+)
+target_include_directories(
+    ${PROJECT_NAME}_static
+    PUBLIC ${WAVE_INCLUDES}
 )
 
 install(
@@ -59,6 +63,8 @@ elseif(("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU") OR ("${CMAKE_C_COMPILER_ID}" ST
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -O2")
 endif()
 
-add_subdirectory(
-    app/diff-wave
-)
+if (WIN32)
+    add_subdirectory(
+        app/diff-wave
+    )
+endif(WIN32)
