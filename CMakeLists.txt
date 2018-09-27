@@ -2,6 +2,15 @@ cmake_minimum_required(VERSION 2.8)
 
 project(wav)
 
+set(WAV_VERSION_MAJOR 0)
+set(WAV_VERSION_MINOR 1)
+set(WAV_VERSION_PATCH 0)
+set(WAV_VERSION 0.1.0)
+set(PROJECT_VERSION_MAJOR 0)
+set(PROJECT_VERSION_MINOR 1)
+set(PROJECT_VERSION_PATCH 0)
+set(PROJECT_VERSION 0.1.0)
+
 set(includes
   include
 )
@@ -16,20 +25,9 @@ set(sources
   src/wav_priv.h
 )
 
-set(WAV_SOVERSION  0)
-set(WAV_VERSION    0.1.0)
-
-include_directories(
-  ${includes}
-)
-
 add_library(${PROJECT_NAME} ${sources})
 
-set_target_properties(${PROJECT_NAME}
-  PROPERTIES
-  VERSION                 ${WAV_VERSION}
-  SOVERSION               ${WAV_SOVERSION}
-)
+target_include_directories(${PROJECT_NAME} PUBLIC ${includes})
 
 install(
   TARGETS ${PROJECT_NAME} ${PROJECT_NAME}
@@ -49,6 +47,8 @@ elseif("${CMAKE_C_COMPILER_ID}" MATCHES "^(GNU|.*Clang)$")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -W -Wall -Wno-multichar -std=c99")
 endif()
 
-add_subdirectory(
-  diff-wav
-)
+if(WIN32)
+  add_subdirectory(
+    diff-wav
+  )
+endif()
