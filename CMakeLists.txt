@@ -59,6 +59,8 @@ elseif(("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU") OR ("${CMAKE_C_COMPILER_ID}" ST
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -O2")
 endif()
 
-add_subdirectory(
-    app/diff-wave
-)
+if (WIN32)
+    add_subdirectory(
+        app/diff-wave
+    )
+endif(WIN32)
