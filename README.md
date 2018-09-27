@@ -1,7 +1,7 @@
-libwave
+libwav
 =======
 
-libwave is a simple and tiny C library for reading or writing PCM wave (.wav)
+libwav is a simple and tiny C library for reading or writing PCM wave (.wav)
 files.
 
 Build
@@ -31,8 +31,3 @@ mkdir build
 cd build
 cmake [-DCMAKE_BUILD_TYPE=<Debug|Release>] -G Xcode ..
 ```
-
-License
--------
-This library is released under
-[LGPL V3](https://www.gnu.org/licenses/lgpl.html).
