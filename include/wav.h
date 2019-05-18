@@ -1,5 +1,5 @@
-#ifndef __WAVE_H__
-#define __WAVE_H__
+#ifndef __WAV_H__
+#define __WAV_H__
 
 /**
  * Simple PCM wav file I/O library
@@ -170,4 +170,4 @@ WavError wav_get_last_error(WavFile* self);
 }
 #endif
 
-#endif /* __WAVE_H__ */
+#endif /* __WAV_H__ */

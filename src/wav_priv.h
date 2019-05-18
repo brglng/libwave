@@ -1,5 +1,5 @@
-#ifndef __WAVE_PRIV_H__
-#define __WAVE_PRIV_H__
+#ifndef __WAV_PRIV_H__
+#define __WAV_PRIV_H__
 
 #include <stdint.h>
 #include <stdio.h>
@@ -101,4 +101,4 @@ struct _WavFile {
 }
 #endif
 
-#endif /* __WAVE_PRIV_H__ */
+#endif /* __WAV_PRIV_H__ */
