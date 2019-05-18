@@ -107,13 +107,13 @@ void wav_write_header(WavFile* self) {
 
     write_count = fwrite(&self->chunk, WAV_RIFF_HEADER_SIZE + 4, 1, self->fp);
     if (write_count != 1) {
-        self->error_code = WAV_ERROR_STDIO;
+        self->error_code = WAV_ERROR_OS;
         return;
     }
 
     write_count = fwrite(&self->chunk.format_chunk, WAV_RIFF_HEADER_SIZE + self->chunk.format_chunk.size, 1, self->fp);
     if (write_count != 1) {
-        self->error_code = WAV_ERROR_STDIO;
+        self->error_code = WAV_ERROR_OS;
         return;
     }
 
@@ -121,14 +121,14 @@ void wav_write_header(WavFile* self) {
         /* if there is a fact chunk */
         write_count = fwrite(&self->chunk.fact_chunk, WAV_RIFF_HEADER_SIZE + self->chunk.fact_chunk.size, 1, self->fp);
         if (write_count != 1) {
-            self->error_code = WAV_ERROR_STDIO;
+            self->error_code = WAV_ERROR_OS;
             return;
         }
     }
 
     write_count = fwrite(&self->chunk.data_chunk, WAV_RIFF_HEADER_SIZE, 1, self->fp);
     if (write_count != 1) {
-        self->error_code = WAV_ERROR_STDIO;
+        self->error_code = WAV_ERROR_OS;
         return;
     }
 
@@ -163,7 +163,7 @@ void wav_init(WavFile* self, char* filename, char* mode) {
 
     self->fp = fopen(filename, self->mode);
     if (self->fp == NULL) {
-        self->error_code = WAV_ERROR_STDIO;
+        self->error_code = WAV_ERROR_OS;
         return;
     }
 
@@ -233,14 +233,14 @@ void wav_finalize(WavFile* self) {
         char padding = 0;
         ret          = fwrite(&padding, sizeof(padding), 1, self->fp);
         if (ret != 1) {
-            self->error_code = WAV_ERROR_STDIO;
+            self->error_code = WAV_ERROR_OS;
             return;
         }
     }
 
     ret = fclose(self->fp);
     if (ret != 0) {
-        self->error_code = WAV_ERROR_STDIO;
+        self->error_code = WAV_ERROR_OS;
         return;
     }
 
@@ -326,14 +326,14 @@ size_t wav_read(void** buffers, size_t count, WavFile* wave) {
         wave->tmp      = malloc(wave->tmp_size);
         if (wave->tmp == NULL) {
             wave->tmp_size   = 0;
-            wave->error_code = WAV_ERROR_MALLOC;
+            wave->error_code = WAV_ERROR_NOMEM;
             return 0;
         }
     }
 
     read_count = fread(wave->tmp, sample_size, n_channels * count, wave->fp);
     if (ferror(wave->fp)) {
-        wave->error_code = WAV_ERROR_STDIO;
+        wave->error_code = WAV_ERROR_OS;
         return 0;
     }
 
@@ -399,7 +399,7 @@ size_t wav_write(void** buffers, size_t count, WavFile* wave) {
         wave->tmp      = malloc(wave->tmp_size);
         if (wave->tmp == NULL) {
             wave->tmp_size   = 0;
-            wave->error_code = WAV_ERROR_MALLOC;
+            wave->error_code = WAV_ERROR_NOMEM;
             return 0;
         }
     }
@@ -416,7 +416,7 @@ size_t wav_write(void** buffers, size_t count, WavFile* wave) {
 
     write_count = fwrite(wave->tmp, sample_size, n_channels * count, wave->fp);
     if (ferror(wave->fp)) {
-        wave->error_code = WAV_ERROR_STDIO;
+        wave->error_code = WAV_ERROR_OS;
         return 0;
     }
 
@@ -428,7 +428,7 @@ size_t wav_write(void** buffers, size_t count, WavFile* wave) {
 
     save_pos = ftell(wave->fp);
     if (save_pos == -1L) {
-        wave->error_code = WAV_ERROR_STDIO;
+        wave->error_code = WAV_ERROR_OS;
         return 0;
     }
     wav_write_header(wave);
@@ -436,7 +436,7 @@ size_t wav_write(void** buffers, size_t count, WavFile* wave) {
         return 0;
     }
     if (fseek(wave->fp, save_pos, SEEK_SET) != 0) {
-        wave->error_code = WAV_ERROR_STDIO;
+        wave->error_code = WAV_ERROR_OS;
         return 0;
     }
 
@@ -448,7 +448,7 @@ long int wav_tell(WavFile* wave) {
     long pos = ftell(wave->fp);
 
     if (pos == -1L) {
-        wave->error_code = WAV_ERROR_STDIO;
+        wave->error_code = WAV_ERROR_OS;
         return -1L;
     } else {
         size_t header_size = wav_get_header_size(wave);
@@ -480,7 +480,7 @@ int wav_seek(WavFile* wave, long int offset, int origin) {
     ret = fseek(wave->fp, offset, SEEK_SET);
 
     if (ret != 0) {
-        wave->error_code = WAV_ERROR_STDIO;
+        wave->error_code = WAV_ERROR_OS;
         return wave->error_code;
     }
 
@@ -504,7 +504,7 @@ int wav_error(WavFile* wave) {
 int wav_flush(WavFile* wave) {
     int ret = fflush(wave->fp);
 
-    wave->error_code = (ret == 0) ? WAV_OK : WAV_ERROR_STDIO;
+    wave->error_code = (ret == 0) ? WAV_OK : WAV_ERROR_OS;
 
     return ret;
 }

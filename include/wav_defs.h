@@ -15,10 +15,10 @@ extern "C" {
 typedef enum _WavError WavError;
 enum _WavError {
     WAV_OK,           /* no error */
+    WAV_ERROR_NOMEM,  /* malloc failed */
+    WAV_ERROR_OS,     /* error when {wave} called a stdio function */
     WAV_ERROR_FORMAT, /* not a wave file or unsupported wave format */
     WAV_ERROR_MODE,   /* incorrect mode when opening the wave file or calling mode-specific API */
-    WAV_ERROR_MALLOC, /* error when {wave} called malloc */
-    WAV_ERROR_STDIO,  /* error when {wave} called a stdio function */
     WAV_ERROR_PARAM,  /* incorrect parameter passed to the API function */
 };
 
