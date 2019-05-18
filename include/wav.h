@@ -2,31 +2,25 @@
 #define __WAVE_H__
 
 /**
- * Simple wave file I/O library
+ * Simple PCM wav file I/O library
  *
- * Author: Zhaosheng Pan <brglng at gmail dot com>
+ * Author: Zhaosheng Pan <zhaosheng.pan@sololand.moe>
  *
- * The API is similar to fopen/fclose/freopen/fread/fwrite/ftell/fseek/feof/ferror/fflush/rewind
+ * The API is designed to be similar to stdio.
  *
  * This library does not support:
  *  - formats other than PCM, IEEE float and log-PCM
  *  - extra chunks after the data chunk
  *  - big endian platforms (might be supported in the future)
- *
- * Must use WaveFile* . WaveFile objects on the stack is not supported,
- * as the size of the struct is not available at compile time. This is intended
- * because the access to the internal of the struct is forbidden, so as to prevent
- * errors.
- *
  */
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#include "wav_defs.h"
 #include <stddef.h>
 #include <stdint.h>
-#include "wav_defs.h"
 
 /** function:       wave_open
  *  description:    Open a wave file
@@ -37,9 +31,9 @@ extern "C" {
  *                  Non-NULL means the memory allocation succeeded, but there can be other errors,
  *                  which can be got using wave_get_last_error or wave_error.
  */
-WaveFile*   wave_open(char* filename, char* mode);
-int         wave_close(WaveFile* wave);
-WaveFile*   wave_reopen(char* filename, char* mode, WaveFile* wave);
+WavFile* wav_open(char* filename, char* mode);
+int      wav_close(WavFile* wave);
+WavFile* wav_reopen(char* filename, char* mode, WavFile* wave);
 
 /** function:       wave_read
  *  description:    Read a block of samples from the wave file
@@ -52,7 +46,7 @@ WaveFile*   wave_reopen(char* filename, char* mode, WaveFile* wave);
  *  remarks:        This API does not support extensible format.
  *                  For extensible format, use {wave_read_raw} instead.
  */
-size_t      wave_read(void** buffers, size_t count, WaveFile* wave);
+size_t wav_read(void** buffers, size_t count, WavFile* wave);
 
 /** function:       wave_write
  *  description:    Write a block of samples to the wave file
@@ -65,7 +59,7 @@ size_t      wave_read(void** buffers, size_t count, WaveFile* wave);
  *  remarks:        This API does not support extensible format.
  *                  For extensible format, use {wave_read_raw} instead.
  */
-size_t      wave_write(void** buffers, size_t count, WaveFile* wave);
+size_t wav_write(void** buffers, size_t count, WavFile* wave);
 
 /** function:       wave_tell
  *  description:    Tell the current position in the wave file.
@@ -73,10 +67,10 @@ size_t      wave_write(void** buffers, size_t count, WaveFile* wave);
  *      wave:       The pointer to the WaveFile structure.
  *  return:         The current frame number.
  */
-long int    wave_tell(WaveFile* wave);
+long int wav_tell(WavFile* wave);
 
-int         wave_seek(WaveFile* wave, long int offset, int origin);
-void        wave_rewind(WaveFile* wave);
+int  wav_seek(WavFile* wave, long int offset, int origin);
+void wav_rewind(WavFile* wave);
 
 /** function:       wave_eof
  *  description:    Tell if the end of the wave file is reached.
@@ -85,7 +79,7 @@ void        wave_rewind(WaveFile* wave);
  *  return:         Non-zero integer if the end of the wave file is reached,
  *                  otherwise zero.
  */
-int         wave_eof(WaveFile* wave);
+int wav_eof(WavFile* wave);
 
 /** function:       wave_error
  *  description:    Tell if an error occurred in the last operation
@@ -93,9 +87,9 @@ int         wave_eof(WaveFile* wave);
  *      wave:       The pointer to the WaveFile structure
  *  return:         Non-zero if there is an error, otherwise zero
  */
-int         wave_error(WaveFile* wave);
+int wav_error(WavFile* wave);
 
-int         wave_flush(WaveFile* wave);
+int wav_flush(WavFile* wave);
 
 /** function:       wave_set_format
  *  description:    Set the format code
@@ -106,7 +100,7 @@ int         wave_flush(WaveFile* wave);
  *  remarks:        All data will be cleared after the call
  *                  {wave_get_last_error} can be used to get the error code if there is an error.
  */
-void        wave_set_format(WaveFile* self, uint16_t format);
+void wav_set_format(WavFile* self, uint16_t format);
 
 /** function:       wave_set_num_channels
  *  description:    Set the number of channels
@@ -117,7 +111,7 @@ void        wave_set_format(WaveFile* self, uint16_t format);
  *  remarks:        All data will be cleared after the call
  *                  {wave_get_last_error} can be used to get the error code if there is an error.
  */
-void        wave_set_num_channels(WaveFile* self, uint16_t num_channels);
+void wav_set_num_channels(WavFile* self, uint16_t num_channels);
 
 /** function:       wave_set_sample_rate
  *  description:    Set the sample rate
@@ -128,7 +122,7 @@ void        wave_set_num_channels(WaveFile* self, uint16_t num_channels);
  *  remarks:        All data will be cleared after the call
  *                  {wave_get_last_error} can be used to get the error code if there is an error.
  */
-void        wave_set_sample_rate(WaveFile* self, uint32_t sample_rate);
+void wav_set_sample_rate(WavFile* self, uint32_t sample_rate);
 
 /** function:       wave_set_valid_bits_per_sample
  *  description:    get the number of valid bits per sample
@@ -140,7 +134,7 @@ void        wave_set_sample_rate(WaveFile* self, uint32_t sample_rate);
  *                  All data will be cleared after the call.
  *                  {wave_get_last_error} can be used to get the error code if there is an error.
  */
-void        wave_set_valid_bits_per_sample(WaveFile* self, uint16_t bits);
+void wav_set_valid_bits_per_sample(WavFile* self, uint16_t bits);
 
 /** function:       wave_set_sample_size
  *  description:    Set the size (in bytes) per sample
@@ -153,16 +147,16 @@ void        wave_set_valid_bits_per_sample(WaveFile* self, uint16_t bits);
  *                  All data will be cleared after the call.
  *                  {wave_get_last_error} can be used to get the error code if there is an error.
  */
-void        wave_set_sample_size(WaveFile* self, size_t sample_size);
+void wav_set_sample_size(WavFile* self, size_t sample_size);
 
 /**
  */
-uint16_t  wave_get_format(WaveFile* self);
-uint16_t  wave_get_num_channels(WaveFile* self);
-uint32_t  wave_get_sample_rate(WaveFile* self);
-uint16_t  wave_get_valid_bits_per_sample(WaveFile* self);
-size_t      wave_get_sample_size(WaveFile* self);
-size_t      wave_get_length(WaveFile* self);
+uint16_t wav_get_format(WavFile* self);
+uint16_t wav_get_num_channels(WavFile* self);
+uint32_t wav_get_sample_rate(WavFile* self);
+uint16_t wav_get_valid_bits_per_sample(WavFile* self);
+size_t   wav_get_sample_size(WavFile* self);
+size_t   wav_get_length(WavFile* self);
 
 /** function:       wave_get_last_error
  *  description:    Get the error code of the last operation.
@@ -170,7 +164,7 @@ size_t      wave_get_length(WaveFile* self);
  *      self        The pointer to the WaveFile structure.
  *  return:         A WaveError value, see {enum _WaveError}.
  */
-WaveError   wave_get_last_error(WaveFile* self);
+WavError wav_get_last_error(WavFile* self);
 
 #ifdef __cplusplus
 }

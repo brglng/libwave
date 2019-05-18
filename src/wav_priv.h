@@ -1,8 +1,8 @@
 #ifndef __WAVE_PRIV_H__
 #define __WAVE_PRIV_H__
 
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include "wav_defs.h"
 
@@ -10,93 +10,95 @@
 extern "C" {
 #endif
 
-#if defined(__i386__) || defined(_M_I86) || defined(_X86_) || defined(__amd64__) || defined(__x86_64__) || defined(_M_X64)
-#define WAVE_ENDIAN_LITTLE
+#if defined(__x86_64) || defined(__amd64) || defined(__i386__) || defined(__x86_64__) || defined(__LITTLE_ENDIAN__)
+#define WAV_ENDIAN_LITTLE 1
+#elif defined(__BIG_ENDIAN__)
+#define WAV_ENDIAN_BIG 1
 #endif
 
-#ifdef WAVE_ENDIAN_LITTLE
-#define WAVE_RIFF_CHUNK_ID          'FFIR'
-#define WAVE_FORMAT_CHUNK_ID        ' tmf'
-#define WAVE_FACT_CHUNK_ID          'tcaf'
-#define WAVE_DATA_CHUNK_ID          'atad'
-#define WAVE_WAVE_ID                'EVAW'
+#if WAV_ENDIAN_LITTLE
+#define WAV_RIFF_CHUNK_ID 'FFIR'
+#define WAV_FORMAT_CHUNK_ID ' tmf'
+#define WAV_FACT_CHUNK_ID 'tcaf'
+#define WAV_DATA_CHUNK_ID 'atad'
+#define WAV_WAVE_ID 'EVAW'
 #endif
 
-#ifdef WAVE_ENDIAN_BIG
-#define WAVE_RIFF_CHUNK_ID          'RIFF'
-#define WAVE_FORMAT_CHUNK_ID        'fmt '
-#define WAVE_FACT_CHUNK_ID          'fact'
-#define WAVE_DATA_CHUNK_ID          'data'
-#define WAVE_WAVE_ID                'WAVE'
+#if WAV_ENDIAN_BIG
+#define WAV_RIFF_CHUNK_ID 'RIFF'
+#define WAV_FORMAT_CHUNK_ID 'fmt '
+#define WAV_FACT_CHUNK_ID 'fact'
+#define WAV_DATA_CHUNK_ID 'data'
+#define WAV_WAVE_ID 'WAVE'
 #endif
 
 #pragma pack(push)
 #pragma pack(1)
 
-#define WAVE_RIFF_HEADER_SIZE   8
+#define WAV_RIFF_HEADER_SIZE 8
 
-typedef struct _WaveFormatChunk WaveFormatChunk;
-struct _WaveFormatChunk {
+typedef struct _WavFormatChunk WavFormatChunk;
+struct _WavFormatChunk {
     /* RIFF header */
-    uint32_t    id;
-    uint32_t    size;
+    uint32_t id;
+    uint32_t size;
 
-    uint16_t    format_tag;
-    uint16_t    n_channels;
-    uint32_t    sample_rate;
-    uint32_t    avg_bytes_per_sec;
-    uint16_t    block_align;
-    uint16_t    bits_per_sample;
+    uint16_t format_tag;
+    uint16_t n_channels;
+    uint32_t sample_rate;
+    uint32_t avg_bytes_per_sec;
+    uint16_t block_align;
+    uint16_t bits_per_sample;
 
-    uint16_t    ext_size;
-    uint16_t    valid_bits_per_sample;
-    uint32_t    channel_mask;
+    uint16_t ext_size;
+    uint16_t valid_bits_per_sample;
+    uint32_t channel_mask;
 
-    uint8_t     sub_format[16];
+    uint8_t sub_format[16];
 };
 
-typedef struct _WaveFactChunk WaveFactChunk;
-struct _WaveFactChunk {
+typedef struct _WavFactChunk WavFactChunk;
+struct _WavFactChunk {
     /* RIFF header */
-    uint32_t    id;
-    uint32_t    size;
+    uint32_t id;
+    uint32_t size;
 
-    uint32_t    sample_length;
+    uint32_t sample_length;
 };
 
-typedef struct _WaveDataChunk WaveDataChunk;
-struct _WaveDataChunk {
+typedef struct _WavDataChunk WavDataChunk;
+struct _WavDataChunk {
     /* RIFF header */
-    uint32_t    id;
-    uint32_t    size;
+    uint32_t id;
+    uint32_t size;
 };
 
-typedef struct _WaveMasterChunk WaveMasterChunk;
-struct _WaveMasterChunk {
+typedef struct _WavMasterChunk WavMasterChunk;
+struct _WavMasterChunk {
     /* RIFF header */
-    uint32_t            id;
-    uint32_t            size;
+    uint32_t id;
+    uint32_t size;
 
-    uint32_t            wave_id;
+    uint32_t wave_id;
 
-    WaveFormatChunk     format_chunk;
-    WaveFactChunk       fact_chunk;
-    WaveDataChunk       data_chunk;
+    WavFormatChunk format_chunk;
+    WavFactChunk   fact_chunk;
+    WavDataChunk   data_chunk;
 };
 
 #pragma pack(pop)
 
-struct _WaveFile {
-    FILE*               fp;
-    char*               mode;
-    WaveError           error_code;
-    WaveMasterChunk     chunk;
-    uint8_t*            tmp;
-    size_t              tmp_size;
+struct _WavFile {
+    FILE*          fp;
+    char*          mode;
+    WavError       error_code;
+    WavMasterChunk chunk;
+    uint8_t*       tmp;
+    size_t         tmp_size;
 };
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif  /* __WAVE_PRIV_H__ */
+#endif /* __WAVE_PRIV_H__ */
