@@ -697,6 +697,6 @@ uint16_t wav_get_sub_format(WavFile* self) {
     return *((uint16_t*)&self->chunk.format_chunk.sub_format);
 }
 
-WavError wav_get_last_error(WavFile* self) {
+WavError wav_errno(WavFile* self) {
     return self->error_code;
 }

@@ -164,7 +164,7 @@ size_t   wav_get_length(WavFile* self);
  *      self        The pointer to the WaveFile structure.
  *  return:         A WaveError value, see {enum _WaveError}.
  */
-WavError wav_get_last_error(WavFile* self);
+WavError wav_errno(WavFile* self);
 
 #ifdef __cplusplus
 }
