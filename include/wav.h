@@ -29,7 +29,7 @@ extern "C" {
  *      mode:       The mode for open (same as fopen)
  *  return:         NULL if the memory allocation for the WaveFile object failed.
  *                  Non-NULL means the memory allocation succeeded, but there can be other errors,
- *                  which can be got using wave_get_last_error or wave_error.
+ *                  which can be got using wav_errno or wave_error.
  */
 WavFile* wav_open(char* filename, char* mode);
 int      wav_close(WavFile* wave);
@@ -91,6 +91,14 @@ int wav_error(WavFile* wave);
 
 int wav_flush(WavFile* wave);
 
+/** function:       wav_errno
+ *  description:    Get the error code of the last operation.
+ *  parameters:
+ *      self        The pointer to the WaveFile structure.
+ *  return:         A WaveError value, see {enum _WaveError}.
+ */
+WavError wav_errno(WavFile* self);
+
 /** function:       wave_set_format
  *  description:    Set the format code
  *  parameters:
@@ -98,7 +106,7 @@ int wav_flush(WavFile* wave);
  *      format:     The format code, which should be one of WAVE_FORMAT_*
  *  return:         None
  *  remarks:        All data will be cleared after the call
- *                  {wave_get_last_error} can be used to get the error code if there is an error.
+ *                  {wav_errno} can be used to get the error code if there is an error.
  */
 void wav_set_format(WavFile* self, uint16_t format);
 
@@ -109,7 +117,7 @@ void wav_set_format(WavFile* self, uint16_t format);
  *      num_channels:   The number of channels
  *  return:         None
  *  remarks:        All data will be cleared after the call
- *                  {wave_get_last_error} can be used to get the error code if there is an error.
+ *                  {wav_errno} can be used to get the error code if there is an error.
  */
 void wav_set_num_channels(WavFile* self, uint16_t num_channels);
 
@@ -120,7 +128,7 @@ void wav_set_num_channels(WavFile* self, uint16_t num_channels);
  *      sample_rate:    The sample rate
  *  return:         None
  *  remarks:        All data will be cleared after the call
- *                  {wave_get_last_error} can be used to get the error code if there is an error.
+ *                  {wav_errno} can be used to get the error code if there is an error.
  */
 void wav_set_sample_rate(WavFile* self, uint32_t sample_rate);
 
@@ -132,7 +140,7 @@ void wav_set_sample_rate(WavFile* self, uint32_t sample_rate);
  *  return:         None
  *  remarks:        If {bits} is 0 or larger than 8*{sample_size}, an error will occur.
  *                  All data will be cleared after the call.
- *                  {wave_get_last_error} can be used to get the error code if there is an error.
+ *                  {wav_errno} can be used to get the error code if there is an error.
  */
 void wav_set_valid_bits_per_sample(WavFile* self, uint16_t bits);
 
@@ -145,7 +153,7 @@ void wav_set_valid_bits_per_sample(WavFile* self, uint16_t bits);
  *  remarks:        When this function is called, the {BitsPerSample} and {ValidBitsPerSample}
  *                  fields in the wave file will be set to 8*{sample_size}.
  *                  All data will be cleared after the call.
- *                  {wave_get_last_error} can be used to get the error code if there is an error.
+ *                  {wav_errno} can be used to get the error code if there is an error.
  */
 void wav_set_sample_size(WavFile* self, size_t sample_size);
 
@@ -157,14 +165,6 @@ uint32_t wav_get_sample_rate(WavFile* self);
 uint16_t wav_get_valid_bits_per_sample(WavFile* self);
 size_t   wav_get_sample_size(WavFile* self);
 size_t   wav_get_length(WavFile* self);
-
-/** function:       wave_get_last_error
- *  description:    Get the error code of the last operation.
- *  parameters:
- *      self        The pointer to the WaveFile structure.
- *  return:         A WaveError value, see {enum _WaveError}.
- */
-WavError wav_errno(WavFile* self);
 
 #ifdef __cplusplus
 }
