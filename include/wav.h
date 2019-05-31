@@ -18,9 +18,26 @@
 extern "C" {
 #endif
 
-#include "wav_defs.h"
 #include <stddef.h>
 #include <stdint.h>
+
+/* wave file format codes */
+#define WAV_FORMAT_PCM 0x0001
+#define WAV_FORMAT_IEEE_FLOAT 0x0003
+#define WAV_FORMAT_ALAW 0x0006
+#define WAV_FORMAT_MULAW 0x0007
+#define WAV_FORMAT_EXTENSIBLE 0xfffe
+
+typedef enum {
+    WAV_OK,           /* no error */
+    WAV_ERROR_NOMEM,  /* malloc failed */
+    WAV_ERROR_OS,     /* error when {wave} called a stdio function */
+    WAV_ERROR_FORMAT, /* not a wave file or unsupported wave format */
+    WAV_ERROR_MODE,   /* incorrect mode when opening the wave file or calling mode-specific API */
+    WAV_ERROR_PARAM,  /* incorrect parameter passed to the API function */
+} WavError;
+
+typedef struct _WavFile WavFile;
 
 /** function:       wave_open
  *  description:    Open a wave file
@@ -31,9 +48,9 @@ extern "C" {
  *                  Non-NULL means the memory allocation succeeded, but there can be other errors,
  *                  which can be got using wav_errno or wave_error.
  */
-WavFile* wav_open(char* filename, char* mode);
-int      wav_close(WavFile* wave);
-WavFile* wav_reopen(char* filename, char* mode, WavFile* wave);
+WavFile* wav_open(const char* filename, const char* mode);
+int      wav_close(WavFile* self);
+WavFile* wav_reopen(WavFile* self, const char* filename, const char* mode);
 
 /** function:       wave_read
  *  description:    Read a block of samples from the wave file
@@ -46,7 +63,7 @@ WavFile* wav_reopen(char* filename, char* mode, WavFile* wave);
  *  remarks:        This API does not support extensible format.
  *                  For extensible format, use {wave_read_raw} instead.
  */
-size_t wav_read(void** buffers, size_t count, WavFile* wave);
+size_t wav_read(WavFile* self, void** buffers, size_t count);
 
 /** function:       wave_write
  *  description:    Write a block of samples to the wave file
@@ -59,7 +76,7 @@ size_t wav_read(void** buffers, size_t count, WavFile* wave);
  *  remarks:        This API does not support extensible format.
  *                  For extensible format, use {wave_read_raw} instead.
  */
-size_t wav_write(void** buffers, size_t count, WavFile* wave);
+size_t wav_write(WavFile* self, const void* const* buffers, size_t count);
 
 /** function:       wave_tell
  *  description:    Tell the current position in the wave file.
@@ -67,10 +84,10 @@ size_t wav_write(void** buffers, size_t count, WavFile* wave);
  *      wave:       The pointer to the WaveFile structure.
  *  return:         The current frame number.
  */
-long int wav_tell(WavFile* wave);
+long int wav_tell(const WavFile* self);
 
-int  wav_seek(WavFile* wave, long int offset, int origin);
-void wav_rewind(WavFile* wave);
+int  wav_seek(WavFile* self, long int offset, int origin);
+void wav_rewind(WavFile* self);
 
 /** function:       wave_eof
  *  description:    Tell if the end of the wave file is reached.
@@ -79,7 +96,7 @@ void wav_rewind(WavFile* wave);
  *  return:         Non-zero integer if the end of the wave file is reached,
  *                  otherwise zero.
  */
-int wav_eof(WavFile* wave);
+int wav_eof(const WavFile* self);
 
 /** function:       wave_error
  *  description:    Tell if an error occurred in the last operation
@@ -87,9 +104,9 @@ int wav_eof(WavFile* wave);
  *      wave:       The pointer to the WaveFile structure
  *  return:         Non-zero if there is an error, otherwise zero
  */
-int wav_error(WavFile* wave);
+int wav_error(const WavFile* self);
 
-int wav_flush(WavFile* wave);
+int wav_flush(WavFile* self);
 
 /** function:       wav_errno
  *  description:    Get the error code of the last operation.
@@ -97,7 +114,7 @@ int wav_flush(WavFile* wave);
  *      self        The pointer to the WaveFile structure.
  *  return:         A WaveError value, see {enum _WaveError}.
  */
-WavError wav_errno(WavFile* self);
+WavError wav_errno(const WavFile* self);
 
 /** function:       wave_set_format
  *  description:    Set the format code
@@ -159,12 +176,14 @@ void wav_set_sample_size(WavFile* self, size_t sample_size);
 
 /**
  */
-uint16_t wav_get_format(WavFile* self);
-uint16_t wav_get_num_channels(WavFile* self);
-uint32_t wav_get_sample_rate(WavFile* self);
-uint16_t wav_get_valid_bits_per_sample(WavFile* self);
-size_t   wav_get_sample_size(WavFile* self);
-size_t   wav_get_length(WavFile* self);
+uint16_t wav_get_format(const WavFile* self);
+uint16_t wav_get_num_channels(const WavFile* self);
+uint32_t wav_get_sample_rate(const WavFile* self);
+uint16_t wav_get_valid_bits_per_sample(const WavFile* self);
+size_t   wav_get_sample_size(const WavFile* self);
+size_t   wav_get_length(const WavFile* self);
+uint32_t wav_get_channel_mask(const WavFile* self);
+uint16_t wav_get_sub_format(const WavFile* self);
 
 #ifdef __cplusplus
 }
