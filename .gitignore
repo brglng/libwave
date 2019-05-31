@@ -37,4 +37,5 @@
 
 /build/
 
+.ccls
 .ccls-cache
