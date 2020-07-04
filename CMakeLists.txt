@@ -17,12 +17,10 @@ set(includes
 
 set(public_headers
   include/wav.h
-  include/wav_defs.h
 )
 
 set(sources
   src/wav.c
-  src/wav_priv.h
 )
 
 add_library(${PROJECT_NAME} ${sources})
