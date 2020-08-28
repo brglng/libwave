@@ -82,14 +82,14 @@ if(${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
   if(WIN32)
     add_subdirectory(diff-wav)
   endif()
-
-  install(DIRECTORY include DESTINATION .)
-
-  install(
-    FILES README.md CHANGELOG.md LICENSE
-    DESTINATION ${CMAKE_INSTALL_DOCDIR}
-    )
 endif()
+
+install(DIRECTORY include DESTINATION .)
+
+install(
+  FILES README.md CHANGELOG.md LICENSE
+  DESTINATION ${CMAKE_INSTALL_DOCDIR}
+  )
 
 install(EXPORT wavTargets
   FILE wavTargets.cmake
