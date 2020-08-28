@@ -83,7 +83,7 @@ struct _WavFile {
     FILE*           fp;
     const char*     filename;
     const char*     mode;
-    WavError        error_code;
+    WavErr        error_code;
     WavMasterChunk  chunk;
     uint8_t*        tmp;
     size_t          tmp_size;
@@ -111,26 +111,26 @@ void wav_parse_header(WavFile* self) {
 
     read_count = fread(&self->chunk, WAV_RIFF_HEADER_SIZE, 1, self->fp);
     if (read_count != 1 || self->chunk.id != WAV_RIFF_CHUNK_ID) {
-        self->error_code = WAV_ERROR_FORMAT;
+        self->error_code = WAV_ERR_FORMAT;
         return;
     }
 
     read_count = fread(&self->chunk.wave_id, 4, 1, self->fp);
     if (read_count != 1 || self->chunk.wave_id != WAV_WAVE_ID) {
-        self->error_code = WAV_ERROR_FORMAT;
+        self->error_code = WAV_ERR_FORMAT;
         return;
     }
 
     read_count = fread(&self->chunk.format_chunk, WAV_RIFF_HEADER_SIZE, 1, self->fp);
     if (read_count != 1 || self->chunk.format_chunk.id != WAV_FORMAT_CHUNK_ID) {
-        self->error_code = WAV_ERROR_FORMAT;
+        self->error_code = WAV_ERR_FORMAT;
         return;
     }
 
     read_count = fread((uint8_t*)(&self->chunk.format_chunk) + WAV_RIFF_HEADER_SIZE,
                        self->chunk.format_chunk.size, 1, self->fp);
     if (read_count != 1) {
-        self->error_code = WAV_ERROR_FORMAT;
+        self->error_code = WAV_ERR_FORMAT;
         return;
     }
 
@@ -139,13 +139,13 @@ void wav_parse_header(WavFile* self) {
     } else if (self->chunk.format_chunk.format_tag == WAV_FORMAT_ALAW ||
                self->chunk.format_chunk.format_tag == WAV_FORMAT_MULAW) {
     } else {
-        self->error_code = WAV_ERROR_FORMAT;
+        self->error_code = WAV_ERR_FORMAT;
         return;
     }
 
     read_count = fread(&self->chunk.fact_chunk, WAV_RIFF_HEADER_SIZE, 1, self->fp);
     if (read_count != 1) {
-        self->error_code = WAV_ERROR_FORMAT;
+        self->error_code = WAV_ERR_FORMAT;
         return;
     }
 
@@ -153,13 +153,13 @@ void wav_parse_header(WavFile* self) {
         read_count = fread((uint8_t*)(&self->chunk.fact_chunk) + WAV_RIFF_HEADER_SIZE,
                            self->chunk.fact_chunk.size, 1, self->fp);
         if (read_count != 1) {
-            self->error_code = WAV_ERROR_FORMAT;
+            self->error_code = WAV_ERR_FORMAT;
             return;
         }
 
         read_count = fread(&self->chunk.data_chunk, WAV_RIFF_HEADER_SIZE, 1, self->fp);
         if (read_count != 1) {
-            self->error_code = WAV_ERROR_FORMAT;
+            self->error_code = WAV_ERR_FORMAT;
             return;
         }
     } else if (self->chunk.fact_chunk.id == WAV_DATA_CHUNK_ID) {
@@ -191,13 +191,13 @@ void wav_write_header(WavFile* self) {
 
     write_count = fwrite(&self->chunk, WAV_RIFF_HEADER_SIZE + 4, 1, self->fp);
     if (write_count != 1) {
-        self->error_code = WAV_ERROR_OS;
+        self->error_code = WAV_ERR_OS;
         return;
     }
 
     write_count = fwrite(&self->chunk.format_chunk, WAV_RIFF_HEADER_SIZE + self->chunk.format_chunk.size, 1, self->fp);
     if (write_count != 1) {
-        self->error_code = WAV_ERROR_OS;
+        self->error_code = WAV_ERR_OS;
         return;
     }
 
@@ -205,14 +205,14 @@ void wav_write_header(WavFile* self) {
         /* if there is a fact chunk */
         write_count = fwrite(&self->chunk.fact_chunk, WAV_RIFF_HEADER_SIZE + self->chunk.fact_chunk.size, 1, self->fp);
         if (write_count != 1) {
-            self->error_code = WAV_ERROR_OS;
+            self->error_code = WAV_ERR_OS;
             return;
         }
     }
 
     write_count = fwrite(&self->chunk.data_chunk, WAV_RIFF_HEADER_SIZE, 1, self->fp);
     if (write_count != 1) {
-        self->error_code = WAV_ERROR_OS;
+        self->error_code = WAV_ERR_OS;
         return;
     }
 
@@ -241,13 +241,13 @@ void wav_init(WavFile* self, const char* filename, const char* mode) {
     } else if (strcmp(mode, "a+") == 0 || strcmp(mode, "ab+") == 0 || strcmp(mode, "a+b") == 0) {
         self->mode = "ab+";
     } else {
-        self->error_code = WAV_ERROR_MODE;
+        self->error_code = WAV_ERR_MODE;
         return;
     }
 
     self->fp = fopen(filename, self->mode);
     if (self->fp == NULL) {
-        self->error_code = WAV_ERROR_OS;
+        self->error_code = WAV_ERR_OS;
         return;
     }
 
@@ -317,14 +317,14 @@ void wav_finalize(WavFile* self) {
         char padding = 0;
         ret          = fwrite(&padding, sizeof(padding), 1, self->fp);
         if (ret != 1) {
-            self->error_code = WAV_ERROR_OS;
+            self->error_code = WAV_ERR_OS;
             return;
         }
     }
 
     ret = fclose(self->fp);
     if (ret != 0) {
-        self->error_code = WAV_ERROR_OS;
+        self->error_code = WAV_ERR_OS;
         return;
     }
 
@@ -382,12 +382,12 @@ size_t wav_read(WavFile* self, void** buffers, size_t count) {
     size_t   len_remain;
 
     if (strcmp(self->mode, "wb") == 0 || strcmp(self->mode, "wbx") == 0 || strcmp(self->mode, "ab") == 0) {
-        self->error_code = WAV_ERROR_MODE;
+        self->error_code = WAV_ERR_MODE;
         return 0;
     }
 
     if (self->chunk.format_chunk.format_tag == WAV_FORMAT_EXTENSIBLE) {
-        self->error_code = WAV_ERROR_FORMAT;
+        self->error_code = WAV_ERR_FORMAT;
         return 0;
     }
 
@@ -410,14 +410,14 @@ size_t wav_read(WavFile* self, void** buffers, size_t count) {
         self->tmp      = malloc(self->tmp_size);
         if (self->tmp == NULL) {
             self->tmp_size   = 0;
-            self->error_code = WAV_ERROR_NOMEM;
+            self->error_code = WAV_ERR_NOMEM;
             return 0;
         }
     }
 
     read_count = fread(self->tmp, sample_size, n_channels * count, self->fp);
     if (ferror(self->fp)) {
-        self->error_code = WAV_ERROR_OS;
+        self->error_code = WAV_ERR_OS;
         return 0;
     }
 
@@ -456,12 +456,12 @@ size_t wav_write(WavFile* self, const void* const* buffers, size_t count) {
     long int save_pos;
 
     if (strcmp(self->mode, "rb") == 0) {
-        self->error_code = WAV_ERROR_MODE;
+        self->error_code = WAV_ERR_MODE;
         return 0;
     }
 
     if (self->chunk.format_chunk.format_tag == WAV_FORMAT_EXTENSIBLE) {
-        self->error_code = WAV_ERROR_FORMAT;
+        self->error_code = WAV_ERR_FORMAT;
         return 0;
     }
 
@@ -483,7 +483,7 @@ size_t wav_write(WavFile* self, const void* const* buffers, size_t count) {
         self->tmp      = malloc(self->tmp_size);
         if (self->tmp == NULL) {
             self->tmp_size   = 0;
-            self->error_code = WAV_ERROR_NOMEM;
+            self->error_code = WAV_ERR_NOMEM;
             return 0;
         }
     }
@@ -500,7 +500,7 @@ size_t wav_write(WavFile* self, const void* const* buffers, size_t count) {
 
     write_count = fwrite(self->tmp, sample_size, n_channels * count, self->fp);
     if (ferror(self->fp)) {
-        self->error_code = WAV_ERROR_OS;
+        self->error_code = WAV_ERR_OS;
         return 0;
     }
 
@@ -512,7 +512,7 @@ size_t wav_write(WavFile* self, const void* const* buffers, size_t count) {
 
     save_pos = ftell(self->fp);
     if (save_pos == -1L) {
-        self->error_code = WAV_ERROR_OS;
+        self->error_code = WAV_ERR_OS;
         return 0;
     }
     wav_write_header(self);
@@ -520,7 +520,7 @@ size_t wav_write(WavFile* self, const void* const* buffers, size_t count) {
         return 0;
     }
     if (fseek(self->fp, save_pos, SEEK_SET) != 0) {
-        self->error_code = WAV_ERROR_OS;
+        self->error_code = WAV_ERR_OS;
         return 0;
     }
 
@@ -532,7 +532,7 @@ long int wav_tell(const WavFile* self) {
     long pos = ftell(self->fp);
 
     if (pos == -1L) {
-        ((WavFile *)self)->error_code = WAV_ERROR_OS;
+        ((WavFile *)self)->error_code = WAV_ERR_OS;
         return -1L;
     } else {
         size_t header_size = wav_get_header_size(self);
@@ -557,14 +557,14 @@ int wav_seek(WavFile* self, long int offset, int origin) {
     if (offset >= 0 && (size_t)offset <= length) {
         offset = self->chunk.format_chunk.block_align;
     } else {
-        self->error_code = WAV_ERROR_PARAM;
+        self->error_code = WAV_ERR_PARAM;
         return self->error_code;
     }
 
     ret = fseek(self->fp, offset, SEEK_SET);
 
     if (ret != 0) {
-        self->error_code = WAV_ERROR_OS;
+        self->error_code = WAV_ERR_OS;
         return self->error_code;
     }
 
@@ -588,18 +588,18 @@ int wav_error(const WavFile* self) {
 int wav_flush(WavFile* self) {
     int ret = fflush(self->fp);
 
-    self->error_code = (ret == 0) ? WAV_OK : WAV_ERROR_OS;
+    self->error_code = (ret == 0) ? WAV_OK : WAV_ERR_OS;
 
     return ret;
 }
 
-WavError wav_errno(const WavFile* self) {
+WavErr wav_errno(const WavFile* self) {
     return self->error_code;
 }
 
 void wav_set_format(WavFile* self, uint16_t format) {
     if (self->mode[0] == 'r') {
-        self->error_code = WAV_ERROR_MODE;
+        self->error_code = WAV_ERR_MODE;
         return;
     }
 
@@ -629,12 +629,12 @@ void wav_set_format(WavFile* self, uint16_t format) {
 
 void wav_set_num_channels(WavFile* self, uint16_t n_channels) {
     if (self->mode[0] == 'r') {
-        self->error_code = WAV_ERROR_MODE;
+        self->error_code = WAV_ERR_MODE;
         return;
     }
 
     if (n_channels < 1) {
-        self->error_code = WAV_ERROR_PARAM;
+        self->error_code = WAV_ERR_PARAM;
         return;
     }
 
@@ -650,7 +650,7 @@ void wav_set_num_channels(WavFile* self, uint16_t n_channels) {
 
 void wav_set_sample_rate(WavFile* self, uint32_t sample_rate) {
     if (self->mode[0] == 'r') {
-        self->error_code = WAV_ERROR_MODE;
+        self->error_code = WAV_ERR_MODE;
         return;
     }
 
@@ -666,19 +666,19 @@ void wav_set_sample_rate(WavFile* self, uint32_t sample_rate) {
 
 void wav_set_valid_bits_per_sample(WavFile* self, uint16_t bits) {
     if (self->mode[0] == 'r') {
-        self->error_code = WAV_ERROR_MODE;
+        self->error_code = WAV_ERR_MODE;
         return;
     }
 
     if (bits < 1 || bits > 8 * self->chunk.format_chunk.block_align / self->chunk.format_chunk.n_channels) {
-        self->error_code = WAV_ERROR_PARAM;
+        self->error_code = WAV_ERR_PARAM;
         return;
     }
 
     if ((self->chunk.format_chunk.format_tag == WAV_FORMAT_ALAW ||
          self->chunk.format_chunk.format_tag == WAV_FORMAT_MULAW) &&
         bits != 8) {
-        self->error_code = WAV_ERROR_PARAM;
+        self->error_code = WAV_ERR_PARAM;
         return;
     }
 
@@ -695,12 +695,12 @@ void wav_set_valid_bits_per_sample(WavFile* self, uint16_t bits) {
 
 void wav_set_sample_size(WavFile* self, size_t sample_size) {
     if (self->mode[0] == 'r') {
-        self->error_code = WAV_ERROR_MODE;
+        self->error_code = WAV_ERR_MODE;
         return;
     }
 
     if (sample_size < 1) {
-        self->error_code = WAV_ERROR_PARAM;
+        self->error_code = WAV_ERR_PARAM;
         return;
     }
 
@@ -717,12 +717,12 @@ void wav_set_sample_size(WavFile* self, size_t sample_size) {
 
 void wav_set_channel_mask(WavFile* self, uint32_t channel_mask) {
     if (self->mode[0] == 'r') {
-        self->error_code = WAV_ERROR_MODE;
+        self->error_code = WAV_ERR_MODE;
         return;
     }
 
     if (self->chunk.format_chunk.format_tag != WAV_FORMAT_EXTENSIBLE) {
-        self->error_code = WAV_ERROR_FORMAT;
+        self->error_code = WAV_ERR_FORMAT;
         return;
     }
 
@@ -734,12 +734,12 @@ void wav_set_channel_mask(WavFile* self, uint32_t channel_mask) {
 
 void wav_set_sub_format(WavFile* self, uint16_t sub_format) {
     if (self->mode[0] == 'r') {
-        self->error_code = WAV_ERROR_MODE;
+        self->error_code = WAV_ERR_MODE;
         return;
     }
 
     if (self->chunk.format_chunk.format_tag != WAV_FORMAT_EXTENSIBLE) {
-        self->error_code = WAV_ERROR_FORMAT;
+        self->error_code = WAV_ERR_FORMAT;
         return;
     }
 
