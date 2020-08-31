@@ -28,6 +28,77 @@
 #define WAV_WAVE_ID             'WAVE'
 #endif
 
+static void* wav_default_aligned_alloc(void *context, size_t alignment, size_t size)
+{
+    (void)context;
+    alignment = (alignment + sizeof(void*) - 1) & ~(sizeof(void*) - 1);
+#ifdef _WIN32
+    void *p = _aligned_malloc(size, alignment);
+    assert(p != NULL);
+#else
+    void *p = NULL;
+    int err = posix_memalign(&p, alignment, size);
+    assert(err == 0);
+#endif
+    return p;
+}
+
+static void* wav_default_realloc(void *context, void *p, size_t size)
+{
+    (void)context;
+    void *ptr = realloc(p, size);
+    assert(ptr != NULL);
+    return ptr;
+}
+
+static void wav_default_free(void *context, void *p)
+{
+    (void)context;
+    free(p);
+}
+
+static WavAllocFuncs g_default_alloc_funcs = {
+    &wav_default_aligned_alloc,
+    &wav_default_realloc,
+    &wav_default_free
+};
+
+static void *g_alloc_context = NULL;
+static WAV_CONST WavAllocFuncs* g_alloc_funcs = &g_default_alloc_funcs;
+
+void wav_set_allocator(void *context, WAV_CONST WavAllocFuncs *funcs)
+{
+    g_alloc_context = context;
+    g_alloc_funcs = funcs;
+}
+
+void* wav_aligned_alloc(size_t alignment, size_t size)
+{
+    return g_alloc_funcs->aligned_alloc(g_alloc_context, alignment, size);
+}
+
+void* wav_realloc(void *p, size_t size)
+{
+    return g_alloc_funcs->realloc(g_alloc_context, p, size);
+}
+
+void wav_free(void *p)
+{
+    if (p != NULL) {
+        g_alloc_funcs->free(g_alloc_context, p);
+    }
+}
+
+char* wav_strdup(WAV_CONST char *str)
+{
+    size_t len = strlen(str) + 1;
+    void *new = WAV_NEW(char, len);
+    if (new == NULL)
+        return NULL;
+
+    return memcpy(new, str, len);
+}
+
 #pragma pack(push, 1)
 
 #define WAV_RIFF_HEADER_SIZE 8
@@ -80,21 +151,21 @@ typedef struct {
 #pragma pack(pop)
 
 struct _WavFile {
-    FILE*           fp;
-    const char*     filename;
-    const char*     mode;
-    WavErr          error_code;
-    WavMasterChunk  chunk;
-    uint8_t*        tmp;
-    size_t          tmp_size;
+    FILE*               fp;
+    char*               filename;
+    WAV_CONST char*     mode;
+    WavErr              error_code;
+    WavMasterChunk      chunk;
+    uint8_t*            tmp;
+    size_t              tmp_size;
 };
 
-static const uint8_t default_sub_format[16] = {
+static WAV_CONST uint8_t default_sub_format[16] = {
     0x01, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71
 };
 
-size_t wav_get_header_size(const WavFile* self)
+size_t wav_get_header_size(WAV_CONST WavFile* self)
 {
     size_t header_size = WAV_RIFF_HEADER_SIZE + 4 +
                          WAV_RIFF_HEADER_SIZE + self->chunk.format_chunk.size +
@@ -222,32 +293,32 @@ void wav_write_header(WavFile* self)
     self->error_code = WAV_OK;
 }
 
-void wav_init(WavFile* self, const char* filename, const char* mode)
+void wav_init(WavFile* self, WAV_CONST char* filename, WAV_CONST char* mode)
 {
-    self->fp         = NULL;
-    self->error_code = WAV_OK;
-    memset(&self->chunk, 0, sizeof(WavMasterChunk));
+    memset(self, 0, sizeof(WavFile));
 
-    if (strcmp(mode, "r") == 0 || strcmp(mode, "rb") == 0) {
+    if (strncmp(mode, "r", 1) == 0 || strncmp(mode, "rb", 2) == 0) {
         self->mode = "rb";
-    } else if (strcmp(mode, "r+") == 0 || strcmp(mode, "rb+") == 0 || strcmp(mode, "r+b") == 0) {
+    } else if (strncmp(mode, "r+", 2) == 0 || strncmp(mode, "rb+", 3) == 0 || strncmp(mode, "r+b", 3) == 0) {
         self->mode = "rb+";
-    } else if (strcmp(mode, "w") == 0 || strcmp(mode, "wb") == 0) {
+    } else if (strncmp(mode, "w", 1) == 0 || strncmp(mode, "wb", 2) == 0) {
         self->mode = "wb";
-    } else if (strcmp(mode, "w+") == 0 || strcmp(mode, "wb+") == 0 || strcmp(mode, "w+b") == 0) {
+    } else if (strncmp(mode, "w+", 2) == 0 || strncmp(mode, "wb+", 3) == 0 || strncmp(mode, "w+b", 3) == 0) {
         self->mode = "wb+";
-    } else if (strcmp(mode, "wx") == 0 || strcmp(mode, "wbx") == 0) {
+    } else if (strncmp(mode, "wx", 2) == 0 || strncmp(mode, "wbx", 3) == 0) {
         self->mode = "wbx";
-    } else if (strcmp(mode, "w+x") == 0 || strcmp(mode, "wb+x") == 0 || strcmp(mode, "w+bx") == 0) {
+    } else if (strncmp(mode, "w+x", 3) == 0 || strncmp(mode, "wb+x", 4) == 0 || strncmp(mode, "w+bx", 4) == 0) {
         self->mode = "wb+x";
-    } else if (strcmp(mode, "a") == 0 || strcmp(mode, "ab") == 0) {
+    } else if (strncmp(mode, "a", 1) == 0 || strncmp(mode, "ab", 2) == 0) {
         self->mode = "ab";
-    } else if (strcmp(mode, "a+") == 0 || strcmp(mode, "ab+") == 0 || strcmp(mode, "a+b") == 0) {
+    } else if (strncmp(mode, "a+", 2) == 0 || strncmp(mode, "ab+", 3) == 0 || strncmp(mode, "a+b", 3) == 0) {
         self->mode = "ab+";
     } else {
         self->error_code = WAV_ERR_MODE;
         return;
     }
+
+    self->filename = wav_strdup(filename);
 
     self->fp = fopen(filename, self->mode);
     if (self->fp == NULL) {
@@ -307,16 +378,18 @@ void wav_finalize(WavFile* self)
 {
     int ret;
 
+    wav_free(self->filename);
+
     if (self->fp == NULL) {
         return;
     }
 
-    if ((strcmp(self->mode, "wb") == 0 ||
-         strcmp(self->mode, "wb+") == 0 ||
-         strcmp(self->mode, "wbx") == 0 ||
-         strcmp(self->mode, "wb+x") == 0 ||
-         strcmp(self->mode, "ab") == 0 ||
-         strcmp(self->mode, "ab+") == 0) &&
+    if ((strncmp(self->mode, "wb", 2) == 0 ||
+         strncmp(self->mode, "wb+", 3) == 0 ||
+         strncmp(self->mode, "wbx", 3) == 0 ||
+         strncmp(self->mode, "wb+x", 4) == 0 ||
+         strncmp(self->mode, "ab", 2) == 0 ||
+         strncmp(self->mode, "ab+", 3) == 0) &&
         self->chunk.data_chunk.size % 2 != 0 &&
         wav_eof(self)) {
         char padding = 0;
@@ -336,19 +409,16 @@ void wav_finalize(WavFile* self)
     self->error_code = WAV_OK;
 }
 
-WavFile* wav_open(const char* filename, const char* mode)
+WavFile* wav_open(WAV_CONST char* filename, WAV_CONST char* mode)
 {
-    WavFile* wave = malloc(sizeof(WavFile));
-    if (wave == NULL) {
+    WavFile* self = WAV_NEW(WavFile);
+    if (self == NULL) {
         return NULL;
     }
 
-    wave->tmp      = NULL;
-    wave->tmp_size = 0;
+    wav_init(self, filename, mode);
 
-    wav_init(wave, filename, mode);
-
-    return wave;
+    return self;
 }
 
 int wav_close(WavFile* self)
@@ -360,22 +430,22 @@ int wav_close(WavFile* self)
     }
 
     if (self->tmp) {
-        free(self->tmp);
+        wav_free(self->tmp);
     }
 
-    free(self);
+    wav_free(self);
 
     return 0;
 }
 
-WavFile* wav_reopen(WavFile* self, const char* filename, const char* mode)
+WavFile* wav_reopen(WavFile* self, WAV_CONST char* filename, WAV_CONST char* mode)
 {
     wav_finalize(self);
     wav_init(self, filename, mode);
     return self;
 }
 
-static const size_t wav_container_sizes[5] = {0, 1, 2, 4, 4};
+static WAV_CONST size_t wav_container_sizes[5] = {0, 1, 2, 4, 4};
 
 static inline size_t wav_calc_container_size(size_t sample_size)
 {
@@ -391,7 +461,7 @@ size_t wav_read(WavFile* self, void** buffers, size_t count)
     size_t   i, j, k;
     size_t   len_remain;
 
-    if (strcmp(self->mode, "wb") == 0 || strcmp(self->mode, "wbx") == 0 || strcmp(self->mode, "ab") == 0) {
+    if (strncmp(self->mode, "wb", 2) == 0 || strncmp(self->mode, "wbx", 3) == 0 || strncmp(self->mode, "ab", 2) == 0) {
         self->error_code = WAV_ERR_MODE;
         return 0;
     }
@@ -414,10 +484,10 @@ size_t wav_read(WavFile* self, void** buffers, size_t count)
 
     if (self->tmp_size < n_channels * count * sample_size || !self->tmp) {
         if (self->tmp) {
-            free(self->tmp);
+            wav_free(self->tmp);
         }
         self->tmp_size = n_channels * count * sample_size;
-        self->tmp      = malloc(self->tmp_size);
+        self->tmp      = WAV_NEW(uint8_t, self->tmp_size);
         if (self->tmp == NULL) {
             self->tmp_size   = 0;
             self->error_code = WAV_ERR_NOMEM;
@@ -457,7 +527,7 @@ size_t wav_read(WavFile* self, void** buffers, size_t count)
     return read_count / n_channels;
 }
 
-size_t wav_write(WavFile* self, const void* const* buffers, size_t count)
+size_t wav_write(WavFile* self, WAV_CONST void* WAV_CONST* buffers, size_t count)
 {
     size_t   write_count;
     uint16_t n_channels     = wav_get_num_channels(self);
@@ -466,7 +536,7 @@ size_t wav_write(WavFile* self, const void* const* buffers, size_t count)
     size_t   i, j, k;
     long int save_pos;
 
-    if (strcmp(self->mode, "rb") == 0) {
+    if (strncmp(self->mode, "rb", 2) == 0) {
         self->error_code = WAV_ERR_MODE;
         return 0;
     }
@@ -488,10 +558,10 @@ size_t wav_write(WavFile* self, const void* const* buffers, size_t count)
 
     if (self->tmp_size < n_channels * count * sample_size || !self->tmp) {
         if (self->tmp) {
-            free(self->tmp);
+            wav_free(self->tmp);
         }
         self->tmp_size = n_channels * count * sample_size;
-        self->tmp      = malloc(self->tmp_size);
+        self->tmp      = WAV_NEW(uint8_t, self->tmp_size);
         if (self->tmp == NULL) {
             self->tmp_size   = 0;
             self->error_code = WAV_ERR_NOMEM;
@@ -539,7 +609,7 @@ size_t wav_write(WavFile* self, const void* const* buffers, size_t count)
     return write_count / n_channels;
 }
 
-long int wav_tell(const WavFile* self)
+long int wav_tell(WAV_CONST WavFile* self)
 {
     long pos = ftell(self->fp);
 
@@ -590,13 +660,13 @@ void wav_rewind(WavFile* self)
     wav_seek(self, 0, SEEK_SET);
 }
 
-int wav_eof(const WavFile* self)
+int wav_eof(WAV_CONST WavFile* self)
 {
     return feof(self->fp) ||
            ftell(self->fp) == (long)(wav_get_header_size(self) + self->chunk.data_chunk.size);
 }
 
-int wav_error(const WavFile* self)
+int wav_error(WAV_CONST WavFile* self)
 {
     return self->error_code != WAV_OK || (self->fp != NULL && ferror(self->fp));
 }
@@ -610,7 +680,7 @@ int wav_flush(WavFile* self)
     return ret;
 }
 
-WavErr wav_errno(const WavFile* self)
+WavErr wav_errno(WAV_CONST WavFile* self)
 {
     return self->error_code;
 }
@@ -774,22 +844,22 @@ void wav_set_sub_format(WavFile* self, uint16_t sub_format)
     /* self->error_code is set by wav_write_header */
 }
 
-uint16_t wav_get_format(const WavFile* self)
+uint16_t wav_get_format(WAV_CONST WavFile* self)
 {
     return self->chunk.format_chunk.format_tag;
 }
 
-uint16_t wav_get_num_channels(const WavFile* self)
+uint16_t wav_get_num_channels(WAV_CONST WavFile* self)
 {
     return self->chunk.format_chunk.n_channels;
 }
 
-uint32_t wav_get_sample_rate(const WavFile* self)
+uint32_t wav_get_sample_rate(WAV_CONST WavFile* self)
 {
     return self->chunk.format_chunk.sample_rate;
 }
 
-uint16_t wav_get_valid_bits_per_sample(const WavFile* self)
+uint16_t wav_get_valid_bits_per_sample(WAV_CONST WavFile* self)
 {
     if (self->chunk.format_chunk.format_tag != WAV_FORMAT_EXTENSIBLE) {
         return self->chunk.format_chunk.bits_per_sample;
@@ -798,22 +868,22 @@ uint16_t wav_get_valid_bits_per_sample(const WavFile* self)
     }
 }
 
-size_t wav_get_sample_size(const WavFile* self)
+size_t wav_get_sample_size(WAV_CONST WavFile* self)
 {
     return self->chunk.format_chunk.block_align / self->chunk.format_chunk.n_channels;
 }
 
-size_t wav_get_length(const WavFile* self)
+size_t wav_get_length(WAV_CONST WavFile* self)
 {
     return self->chunk.data_chunk.size / (self->chunk.format_chunk.block_align);
 }
 
-uint32_t wav_get_channel_mask(const WavFile* self)
+uint32_t wav_get_channel_mask(WAV_CONST WavFile* self)
 {
     return self->chunk.format_chunk.channel_mask;
 }
 
-uint16_t wav_get_sub_format(const WavFile* self)
+uint16_t wav_get_sub_format(WAV_CONST WavFile* self)
 {
     return *((uint16_t*)&self->chunk.format_chunk.sub_format);
 }

@@ -5,9 +5,10 @@
  * The API is designed to be similar to stdio.
  *
  * This library does not support:
- *  - formats other than PCM, IEEE float and log-PCM
- *  - extra chunks after the data chunk
- *  - big endian platforms (might be supported in the future)
+ *
+ *   - formats other than PCM, IEEE float and log-PCM
+ *   - extra chunks after the data chunk
+ *   - big endian platforms (might be supported in the future)
  */
 
 #ifndef __WAV_H__
@@ -20,6 +21,12 @@ extern "C" {
 #include <stddef.h>
 #include <stdint.h>
 
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
+#define WAV_CONST const
+#else
+#define WAV_CONST
+#endif
+
 /* wave file format codes */
 #define WAV_FORMAT_PCM 0x0001
 #define WAV_FORMAT_IEEE_FLOAT 0x0003
@@ -28,13 +35,42 @@ extern "C" {
 #define WAV_FORMAT_EXTENSIBLE 0xfffe
 
 typedef enum {
-    WAV_OK,           /** no error */
+    WAV_OK,         /** no error */
     WAV_ERR_NOMEM,  /** malloc failed */
     WAV_ERR_OS,     /** error when {wave} called a stdio function */
     WAV_ERR_FORMAT, /** not a wave file or unsupported wave format */
     WAV_ERR_MODE,   /** incorrect mode when opening the wave file or calling mode-specific API */
     WAV_ERR_PARAM,  /** incorrect parameter passed to the API function */
 } WavErr;
+
+typedef struct {
+    void*   (*aligned_alloc)(void *context, size_t alignment, size_t size);
+    void*   (*realloc)(void *context, void *p, size_t size);
+    void    (*free)(void *context, void *p);
+} WavAllocFuncs;
+
+void wav_set_allocator(void *context, WAV_CONST WavAllocFuncs *funcs);
+
+void* wav_aligned_alloc(size_t alignment, size_t size);
+void* wav_realloc(void *p, size_t size);
+void wav_free(void *p);
+
+#ifdef __cplusplus
+#define WAV_ALIGNOF(type) alignof(type)
+#else
+#if __STDC_VERSION__ >= 201112L
+#define WAV_ALIGNOF(type) _Alignof(type)
+#else
+#define WAV_ALIGNOF(type) offsetof(struct { char c; type d; }, d)
+#endif
+#endif
+
+#define _WAV_NEW0(_type) wav_aligned_alloc(WAV_ALIGNOF(_type), sizeof(_type))
+#define _WAV_NEW1(_type, _count) wav_aligned_alloc(WAV_ALIGNOF(_type), sizeof(_type) * (_count))
+#define _WAV_NEW(_type, _0, _macro_name, ...) _macro_name
+#define WAV_NEW(_type, ...) ((_type*)_WAV_NEW(_type, ##__VA_ARGS__, _WAV_NEW1, _WAV_NEW0)(_type, ##__VA_ARGS__))
+
+char* wav_strdup(WAV_CONST char *str);
 
 typedef struct _WavFile WavFile;
 
@@ -44,9 +80,9 @@ typedef struct _WavFile WavFile;
  *  @param mode         The mode for open (same as {fopen})
  *  @return             NULL if the memory allocation for the {WavFile} object failed. Non-NULL means the memory allocation succeeded, but there can be other errors, which can be obtained using {wav_errno} or {wav_error}.
  */
-WavFile* wav_open(const char* filename, const char* mode);
+WavFile* wav_open(WAV_CONST char* filename, WAV_CONST char* mode);
 int      wav_close(WavFile* self);
-WavFile* wav_reopen(WavFile* self, const char* filename, const char* mode);
+WavFile* wav_reopen(WavFile* self, WAV_CONST char* filename, WAV_CONST char* mode);
 
 /** Read a block of samples from the wav file
  *
@@ -66,14 +102,14 @@ size_t wav_read(WavFile* self, void** buffers, size_t count);
  *  @return         The number of frames written. If returned value is less than {count}, either EOF reached or an error occured.
  *  @remarks        This API does not support extensible format. For extensible format, use {wave_read_raw} instead.
  */
-size_t wav_write(WavFile* self, const void* const* buffers, size_t count);
+size_t wav_write(WavFile* self, WAV_CONST void* WAV_CONST* buffers, size_t count);
 
 /** Tell the current position in the wav file.
  *
  *  @param self     The pointer to the WavFile structure.
  *  @return         The current frame index.
  */
-long int wav_tell(const WavFile* self);
+long int wav_tell(WAV_CONST WavFile* self);
 
 int  wav_seek(WavFile* self, long int offset, int origin);
 void wav_rewind(WavFile* self);
@@ -83,23 +119,23 @@ void wav_rewind(WavFile* self);
  *  @param self     The pointer to the WavFile structure.
  *  @return         Non-zero integer if the end of the wav file is reached, otherwise zero.
  */
-int wav_eof(const WavFile* self);
+int wav_eof(WAV_CONST WavFile* self);
 
 /** Tell if an error occurred in the last operation
  *
  *  @param self     The pointer to the {WavFile} structure
  *  @return         Non-zero if there is an error, otherwise zero
  */
-int wav_error(const WavFile* self);
+int wav_error(WAV_CONST WavFile* self);
 
 int wav_flush(WavFile* self);
 
 /** Get the error code of the last operation.
  *
  *  @param self     The pointer to the {WavFile} structure.
- *  @return         A WavError value, see {WavError}.
+ *  @return         A WavErr value, see {WavErr}.
  */
-WavErr wav_errno(const WavFile* self);
+WavErr wav_errno(WAV_CONST WavFile* self);
 
 /** Set the format code
  *
@@ -141,14 +177,14 @@ void wav_set_valid_bits_per_sample(WavFile* self, uint16_t bits);
  */
 void wav_set_sample_size(WavFile* self, size_t sample_size);
 
-uint16_t wav_get_format(const WavFile* self);
-uint16_t wav_get_num_channels(const WavFile* self);
-uint32_t wav_get_sample_rate(const WavFile* self);
-uint16_t wav_get_valid_bits_per_sample(const WavFile* self);
-size_t   wav_get_sample_size(const WavFile* self);
-size_t   wav_get_length(const WavFile* self);
-uint32_t wav_get_channel_mask(const WavFile* self);
-uint16_t wav_get_sub_format(const WavFile* self);
+uint16_t wav_get_format(WAV_CONST WavFile* self);
+uint16_t wav_get_num_channels(WAV_CONST WavFile* self);
+uint32_t wav_get_sample_rate(WAV_CONST WavFile* self);
+uint16_t wav_get_valid_bits_per_sample(WAV_CONST WavFile* self);
+size_t   wav_get_sample_size(WAV_CONST WavFile* self);
+size_t   wav_get_length(WAV_CONST WavFile* self);
+uint32_t wav_get_channel_mask(WAV_CONST WavFile* self);
+uint16_t wav_get_sub_format(WAV_CONST WavFile* self);
 
 #ifdef __cplusplus
 }
