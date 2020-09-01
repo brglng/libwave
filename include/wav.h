@@ -135,7 +135,7 @@ WavFile* wav_reopen(WavFile* self, WAV_CONST char* filename, WAV_CONST char* mod
  *  @return             The number of frames read. If returned value is less than {count}, either EOF reached or an error occured
  *  @remarks            This API does not support extensible format. For extensible format, use {wave_read_raw} instead.
  */
-size_t wav_read(WavFile* self, void *buffers, size_t count);
+size_t wav_read(WavFile* self, void *buffer, size_t count);
 
 /** Write a block of samples to the wav file
  *
