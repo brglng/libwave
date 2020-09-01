@@ -157,7 +157,7 @@ void wav_err_clear(void)
     }
 }
 
-static WAV_INLINE void wav_err_set(WavErrCode code, WAV_CONST char *format, ...)
+WAV_INLINE void wav_err_set(WavErrCode code, WAV_CONST char *format, ...)
 {
     assert(g_err.code == WAV_OK);
     va_list args;
@@ -168,7 +168,7 @@ static WAV_INLINE void wav_err_set(WavErrCode code, WAV_CONST char *format, ...)
     va_end(args);
 }
 
-static WAV_INLINE void wav_err_set_literal(WavErrCode code, WAV_CONST char *message)
+WAV_INLINE void wav_err_set_literal(WavErrCode code, WAV_CONST char *message)
 {
     assert(g_err.code == WAV_OK);
     g_err.code = code;
