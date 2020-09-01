@@ -152,7 +152,7 @@ void wav_err_clear(void)
             wav_free(g_err.message);
         }
         g_err.code = WAV_OK;
-        g_err.message = "";
+        g_err.message = (char*)"";
         g_err._is_literal = 1;
     }
 }
