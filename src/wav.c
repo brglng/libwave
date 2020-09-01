@@ -28,7 +28,7 @@
 #define WAV_WAVE_ID             ((WavU32)'WAVE')
 #endif
 
-static WAV_THREAD_LOCAL WavErr g_err = {WAV_OK, "", 1};
+static WAV_THREAD_LOCAL WavErr g_err = {WAV_OK, (char*)"", 1};
 
 static void* wav_default_aligned_alloc(void *context, size_t alignment, size_t size)
 {
