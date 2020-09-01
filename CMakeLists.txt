@@ -78,12 +78,6 @@ install(
 
 export(PACKAGE wav)
 
-if(${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
-  if(WIN32)
-    add_subdirectory(diff-wav)
-  endif()
-endif()
-
 install(DIRECTORY include DESTINATION .)
 
 install(
