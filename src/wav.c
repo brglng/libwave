@@ -350,13 +350,13 @@ void wav_write_header(WavFile* self)
 
     write_count = fwrite(&self->chunk, WAV_RIFF_HEADER_SIZE + 4, 1, self->fp);
     if (write_count != 1) {
-        wav_err_set(WAV_ERR_OS, "Error while writing to %s: %s [OS error %d]", self->filename, strerror(errno), errno);
+        wav_err_set(WAV_ERR_OS, "Error while writing to %s: %s [errno %d]", self->filename, strerror(errno), errno);
         return;
     }
 
     write_count = fwrite(&self->chunk.format_chunk, WAV_RIFF_HEADER_SIZE + self->chunk.format_chunk.size, 1, self->fp);
     if (write_count != 1) {
-        wav_err_set(WAV_ERR_OS, "Error while writing to %s: %s [OS error %d]", self->filename, strerror(errno), errno);
+        wav_err_set(WAV_ERR_OS, "Error while writing to %s: %s [errno %d]", self->filename, strerror(errno), errno);
         return;
     }
 
@@ -364,14 +364,14 @@ void wav_write_header(WavFile* self)
         /* if there is a fact chunk */
         write_count = fwrite(&self->chunk.fact_chunk, WAV_RIFF_HEADER_SIZE + self->chunk.fact_chunk.size, 1, self->fp);
         if (write_count != 1) {
-            wav_err_set(WAV_ERR_OS, "Error while writing to %s: %s [OS error %d]", self->filename, strerror(errno), errno);
+            wav_err_set(WAV_ERR_OS, "Error while writing to %s: %s [errno %d]", self->filename, strerror(errno), errno);
             return;
         }
     }
 
     write_count = fwrite(&self->chunk.data_chunk, WAV_RIFF_HEADER_SIZE, 1, self->fp);
     if (write_count != 1) {
-        wav_err_set(WAV_ERR_OS, "Error while writing to %s: %s [OS error %d]", self->filename, strerror(errno), errno);
+        wav_err_set(WAV_ERR_OS, "Error while writing to %s: %s [errno %d]", self->filename, strerror(errno), errno);
         return;
     }
 }
