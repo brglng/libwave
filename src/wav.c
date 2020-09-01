@@ -350,13 +350,13 @@ void wav_write_header(WavFile* self)
 
     write_count = fwrite(&self->chunk, WAV_RIFF_HEADER_SIZE + 4, 1, self->fp);
     if (write_count != 1) {
-        wav_err_set(WAV_ERR_OS, "Error while writing to %s: %s [errno %d]", self->filename, strerror(errno), errno);
+        wav_err_set(WAV_ERR_OS, "Error while writing to %s [errno %d: %s]", self->filename, errno, strerror(errno));
         return;
     }
 
     write_count = fwrite(&self->chunk.format_chunk, WAV_RIFF_HEADER_SIZE + self->chunk.format_chunk.size, 1, self->fp);
     if (write_count != 1) {
-        wav_err_set(WAV_ERR_OS, "Error while writing to %s: %s [errno %d]", self->filename, strerror(errno), errno);
+        wav_err_set(WAV_ERR_OS, "Error while writing to %s [errno %d: %s]", self->filename, errno, strerror(errno));
         return;
     }
 
@@ -364,14 +364,14 @@ void wav_write_header(WavFile* self)
         /* if there is a fact chunk */
         write_count = fwrite(&self->chunk.fact_chunk, WAV_RIFF_HEADER_SIZE + self->chunk.fact_chunk.size, 1, self->fp);
         if (write_count != 1) {
-            wav_err_set(WAV_ERR_OS, "Error while writing to %s: %s [errno %d]", self->filename, strerror(errno), errno);
+            wav_err_set(WAV_ERR_OS, "Error while writing to %s [errno %d: %s]", self->filename, errno, strerror(errno));
             return;
         }
     }
 
     write_count = fwrite(&self->chunk.data_chunk, WAV_RIFF_HEADER_SIZE, 1, self->fp);
     if (write_count != 1) {
-        wav_err_set(WAV_ERR_OS, "Error while writing to %s: %s [errno %d]", self->filename, strerror(errno), errno);
+        wav_err_set(WAV_ERR_OS, "Error while writing to %s [errno %d: %s]", self->filename, errno, strerror(errno));
         return;
     }
 }
@@ -405,7 +405,7 @@ void wav_init(WavFile* self, WAV_CONST char* filename, WAV_CONST char* mode)
 
     self->fp = fopen(filename, self->mode);
     if (self->fp == NULL) {
-        wav_err_set(WAV_ERR_OS, "Error when opening %s: %s [errno %d]", filename, strerror(errno), errno);
+        wav_err_set(WAV_ERR_OS, "Error when opening %s [errno %d: %s]", filename, errno, strerror(errno));
         return;
     }
 
@@ -472,14 +472,14 @@ void wav_finalize(WavFile* self)
         char padding = 0;
         ret          = (int)fwrite(&padding, sizeof(padding), 1, self->fp);
         if (ret != 1) {
-            fprintf(stderr, "libwav: fwrite to %s failed: %s [errno %d]", self->filename, strerror(errno), errno);
+            fprintf(stderr, "libwav: fwrite to %s failed [errno %d: %s]", self->filename, errno, strerror(errno));
             return;
         }
     }
 
     ret = fclose(self->fp);
     if (ret != 0) {
-        fprintf(stderr, "libwav: fclose failed with code %d: %s [errno %d]", ret, strerror(errno), errno);
+        fprintf(stderr, "libwav: fclose failed with code %d [errno %d: %s]", ret, errno, strerror(errno));
         return;
     }
 }
@@ -538,7 +538,7 @@ size_t wav_read(WavFile* self, void *buffer, size_t count)
 
     read_count = fread(buffer, sample_size, n_channels * count, self->fp);
     if (ferror(self->fp)) {
-        wav_err_set(WAV_ERR_OS, "Error when reading %s: %s [errno %d]", self->filename, strerror(errno), errno);
+        wav_err_set(WAV_ERR_OS, "Error when reading %s [errno %d: %s]", self->filename, errno, strerror(errno));
         return 0;
     }
 
@@ -573,7 +573,7 @@ size_t wav_write(WavFile* self, WAV_CONST void *buffer, size_t count)
 
     write_count = fwrite(buffer, sample_size, n_channels * count, self->fp);
     if (ferror(self->fp)) {
-        wav_err_set(WAV_ERR_OS, "Error when writing to %s: %s [errno %d]", self->filename, strerror(errno), errno);
+        wav_err_set(WAV_ERR_OS, "Error when writing to %s [errno %d: %s]", self->filename, errno, strerror(errno));
         return 0;
     }
 
@@ -585,7 +585,7 @@ size_t wav_write(WavFile* self, WAV_CONST void *buffer, size_t count)
 
     save_pos = ftell(self->fp);
     if (save_pos == -1L) {
-        wav_err_set(WAV_ERR_OS, "ftell() failed: %s [errno %d]", strerror(errno), errno);
+        wav_err_set(WAV_ERR_OS, "ftell() failed [errno %d: %s]", errno, strerror(errno));
         return 0;
     }
     wav_write_header(self);
@@ -593,7 +593,7 @@ size_t wav_write(WavFile* self, WAV_CONST void *buffer, size_t count)
         return 0;
     }
     if (fseek(self->fp, save_pos, SEEK_SET) != 0) {
-        wav_err_set(WAV_ERR_OS, "fseek() failed: %s [errno %d]", strerror(errno), errno);
+        wav_err_set(WAV_ERR_OS, "fseek() failed [errno %d: %s]", errno, strerror(errno));
         return 0;
     }
 
@@ -605,7 +605,7 @@ long int wav_tell(WAV_CONST WavFile* self)
     long pos = ftell(self->fp);
 
     if (pos == -1L) {
-        wav_err_set(WAV_ERR_OS, "ftell() failed: %s [errno %d]", strerror(errno), errno);
+        wav_err_set(WAV_ERR_OS, "ftell() failed [errno %d: %s]", errno, strerror(errno));
         return -1L;
     } else {
         long header_size = (long)wav_get_header_size(self);
@@ -637,7 +637,7 @@ int wav_seek(WavFile* self, long int offset, int origin)
     ret = fseek(self->fp, offset, SEEK_SET);
 
     if (ret != 0) {
-        wav_err_set(WAV_ERR_OS, "fseek() failed: %s [errno %d]", strerror(errno), errno);
+        wav_err_set(WAV_ERR_OS, "fseek() failed [errno %d: %s]", errno, strerror(errno));
         return (int)g_err.code;
     }
 
@@ -660,7 +660,7 @@ int wav_flush(WavFile* self)
     int ret = fflush(self->fp);
 
     if (ret != 0) {
-        wav_err_set(WAV_ERR_OS, "fflush() failed: %s [errno %d]", strerror(errno), errno);
+        wav_err_set(WAV_ERR_OS, "fflush() failed [errno %d: %s]", errno, strerror(errno));
     }
 
     return ret;
