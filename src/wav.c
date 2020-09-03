@@ -299,7 +299,7 @@ void wav_parse_header(WavFile* self)
                     self->format_chunk.body.format_tag != WAV_FORMAT_ALAW &&
                     self->format_chunk.body.format_tag != WAV_FORMAT_MULAW)
                 {
-                    wav_err_set(WAV_ERR_FORMAT, "Unsupported format tag: %010x", self->format_chunk.body.format_tag);
+                    wav_err_set(WAV_ERR_FORMAT, "Unsupported format tag: %#010x", self->format_chunk.body.format_tag);
                     return;
                 }
                 break;
