@@ -164,34 +164,13 @@ void wav_rewind(WavFile* self);
  */
 int wav_eof(WAV_CONST WavFile* self);
 
-/** Tell if an error occurred in the last operation
- *
- *  @param self     The pointer to the {WavFile} structure
- *  @return         Non-zero if there is an error, otherwise zero
- */
-WAV_INLINE int wav_error(WAV_CONST WavFile* self)
-{
-    (void)self;
-    return wav_err()->code != WAV_OK;
-}
-
 int wav_flush(WavFile* self);
-
-/** Get the error code of the last operation.
- *
- *  @param self     The pointer to the {WavFile} structure.
- *  @return         A WavErrCode value, see {WavErrCode}.
- */
-WAV_INLINE WavErrCode wav_errno(void)
-{
-    return wav_err()->code;
-}
 
 /** Set the format code
  *
  *  @param self     The {WavFile} object
  *  @param format   The format code, which should be one of `WAV_FORMAT_*`
- *  @remarks        All data will be cleared after the call. {wav_errno} can be used to get the error code if there is an error.a
+ *  @remarks        All data will be cleared after the call. {wav_errno} can be used to get the error code if there is an error.
  */
 void wav_set_format(WavFile* self, WavU16 format);
 
