@@ -294,14 +294,13 @@ void wav_parse_header(WavFile* self)
                     wav_err_set_literal(WAV_ERR_FORMAT, "Unexpected EOF");
                     return;
                 }
-                switch (self->format_chunk.body.format_tag) {
-                    case WAV_FORMAT_PCM:
-                    case WAV_FORMAT_IEEE_FLOAT:
-                    case WAV_FORMAT_ALAW:
-                    case WAV_FORMAT_MULAW:
-                    default:
-                        wav_err_set(WAV_ERR_FORMAT, "Unsupported format tag: %010x", self->format_chunk.body.format_tag);
-                        return;
+                if (self->format_chunk.body.format_tag != WAV_FORMAT_PCM &&
+                    self->format_chunk.body.format_tag != WAV_FORMAT_IEEE_FLOAT &&
+                    self->format_chunk.body.format_tag != WAV_FORMAT_ALAW &&
+                    self->format_chunk.body.format_tag != WAV_FORMAT_MULAW)
+                {
+                    wav_err_set(WAV_ERR_FORMAT, "Unsupported format tag: %010x", self->format_chunk.body.format_tag);
+                    return;
                 }
                 break;
             case WAV_FACT_CHUNK_ID:
