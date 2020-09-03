@@ -34,6 +34,8 @@ extern "C" {
 #if defined(__APPLE__) || defined(_MSC_VER)
 typedef long long           WavI64;
 typedef unsigned long long  WavU64;
+typedef long long           WavIntPtr;
+typedef unsigned long long  WavUIntPtr;
 #else
 #if defined(_WIN64) || defined(__x86_64) || defined(__amd64)
 typedef long                WavI64;
