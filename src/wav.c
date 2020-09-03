@@ -442,7 +442,7 @@ void wav_init(WavFile* self, WAV_CONST char* filename, WAV_CONST char* mode)
     self->riff_chunk.offset = sizeof(WavChunkHeader) + 4;
 
     self->format_chunk.header.id                = WAV_FORMAT_CHUNK_ID;
-    self->format_chunk.header.size              = (WavU32)&self->format_chunk.body.ext_size - (WavU32)&self->format_chunk.body;
+    self->format_chunk.header.size              = (WavU32)((WavUIntPtr)&self->format_chunk.body.ext_size - (WavUIntPtr)&self->format_chunk.body);
     self->format_chunk.offset                   = self->riff_chunk.offset + sizeof(WavChunkHeader);
     self->format_chunk.body.format_tag          = WAV_FORMAT_PCM;
     self->format_chunk.body.num_channels        = 2;
@@ -642,7 +642,7 @@ long int wav_tell(WAV_CONST WavFile* self)
         return -1L;
     }
 
-    assert(pos >= self->data_chunk.offset);
+    assert(pos >= (long)self->data_chunk.offset);
 
     return (long)(((WavU64)pos - self->data_chunk.offset) / (self->format_chunk.body.block_align));
 }
@@ -653,9 +653,9 @@ int wav_seek(WavFile* self, long int offset, int origin)
     int    ret;
 
     if (origin == SEEK_CUR) {
-        offset += wav_tell(self);
+        offset += (long)wav_tell(self);
     } else if (origin == SEEK_END) {
-        offset += length;
+        offset += (long)length;
     }
 
     /* POSIX allows seeking beyond file end */
@@ -707,7 +707,7 @@ void wav_set_format(WavFile* self, WavU16 format)
     self->format_chunk.body.format_tag = format;
     if (format != WAV_FORMAT_PCM && format != WAV_FORMAT_EXTENSIBLE) {
         self->format_chunk.body.ext_size = 0;
-        self->format_chunk.header.size = (WavU32)&self->format_chunk.body.valid_bits_per_sample - (WavU32)&self->format_chunk.body;
+        self->format_chunk.header.size = (WavU32)((WavUIntPtr)&self->format_chunk.body.valid_bits_per_sample - (WavUIntPtr)&self->format_chunk.body);
     } else if (format == WAV_FORMAT_EXTENSIBLE) {
         self->format_chunk.body.ext_size = 22;
         self->format_chunk.header.size = sizeof(WavFormatChunk) - sizeof(WavChunkHeader);

@@ -38,9 +38,13 @@ typedef unsigned long long  WavU64;
 #if defined(_WIN64) || defined(__x86_64) || defined(__amd64)
 typedef long                WavI64;
 typedef unsigned long       WavU64;
+typedef long                WavIntPtr;
+typedef unsigned long       WavUIntPtr;
 #else
 typedef long long           WavI64;
 typedef unsigned long long  WavU64;
+typedef int                 WavIntPtr;
+typedef unsigned int        WavUIntPtr;
 #endif
 #endif
 
