@@ -556,7 +556,7 @@ size_t wav_read(WavFile* self, void *buffer, size_t count)
 WAV_INLINE void wav_update_sizes(WavFile *self)
 {
     long int save_pos = ftell(self->fp);
-    if (fseek(self->fp, (long)(self->riff_chunk.offset - 4), SEEK_SET) != 0) {
+    if (fseek(self->fp, (long)(sizeof(WavChunkHeader) - 4), SEEK_SET) != 0) {
         wav_err_set(WAV_ERR_OS, "fseek() failed [errno %d: %s]", errno, strerror(errno));
         return;
     }
@@ -835,7 +835,8 @@ void wav_set_sub_format(WavFile* self, WavU16 sub_format)
         return;
     }
 
-    *((WavU16*)&self->format_chunk.body.sub_format) = sub_format;
+    self->format_chunk.body.sub_format[0] = (WavU8)(sub_format & 0xff);
+    self->format_chunk.body.sub_format[1] = (WavU8)(sub_format >> 8);
 
     wav_write_header(self);
 }
@@ -881,5 +882,8 @@ WavU32 wav_get_channel_mask(WAV_CONST WavFile* self)
 
 WavU16 wav_get_sub_format(WAV_CONST WavFile* self)
 {
-    return *((WavU16*)&self->format_chunk.body.sub_format);
+    WavU16 sub_format = self->format_chunk.body.sub_format[1];
+    sub_format <<= 8;
+    sub_format |= self->format_chunk.body.sub_format[0];
+    return sub_format;
 }
