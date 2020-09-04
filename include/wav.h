@@ -89,29 +89,16 @@ typedef struct {
 } WavErr;
 
 typedef struct {
-    void*   (*aligned_alloc)(void *context, size_t alignment, size_t size);
+    void*   (*malloc)(void *context, size_t size);
     void*   (*realloc)(void *context, void *p, size_t size);
     void    (*free)(void *context, void *p);
 } WavAllocFuncs;
 
 void wav_set_allocator(void *context, WAV_CONST WavAllocFuncs *funcs);
 
-void* wav_aligned_alloc(size_t alignment, size_t size);
+void* wav_malloc(size_t size);
 void* wav_realloc(void *p, size_t size);
 void wav_free(void *p);
-
-#if defined(__cplusplus) && __cplusplus >= 201103L
-#define WAV_ALIGNOF(type) alignof(type)
-#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
-#define WAV_ALIGNOF(type) _Alignof(type)
-#else
-#define WAV_ALIGNOF(type) offsetof(struct { char c; type d; }, d)
-#endif
-
-#define _WAV_NEW0(_type) wav_aligned_alloc(WAV_ALIGNOF(_type), sizeof(_type))
-#define _WAV_NEW1(_type, _count) wav_aligned_alloc(WAV_ALIGNOF(_type), sizeof(_type) * (_count))
-#define _WAV_NEW(_type, _0, _macro_name, ...) _macro_name
-#define WAV_NEW(_type, ...) ((_type*)_WAV_NEW(_type, ##__VA_ARGS__, _WAV_NEW1, _WAV_NEW0)(_type, ##__VA_ARGS__))
 
 char* wav_strdup(WAV_CONST char *str);
 char* wav_strndup(WAV_CONST char *str, size_t n);

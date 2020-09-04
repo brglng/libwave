@@ -30,18 +30,11 @@
 
 WAV_THREAD_LOCAL WavErr g_err = {WAV_OK, (char*)"", 1};
 
-static void* wav_default_aligned_alloc(void *context, size_t alignment, size_t size)
+static void* wav_default_malloc(void *context, size_t size)
 {
     (void)context;
-    alignment = (alignment + sizeof(void*) - 1) & ~(sizeof(void*) - 1);
-#ifdef _WIN32
-    void *p = _aligned_malloc(size, alignment);
+    void *p = malloc(size);
     assert(p != NULL);
-#else
-    void *p = NULL;
-    int err = posix_memalign(&p, alignment, size);
-    assert(err == 0);
-#endif
     return p;
 }
 
@@ -60,7 +53,7 @@ static void wav_default_free(void *context, void *p)
 }
 
 static WavAllocFuncs g_default_alloc_funcs = {
-    &wav_default_aligned_alloc,
+    &wav_default_malloc,
     &wav_default_realloc,
     &wav_default_free
 };
@@ -74,9 +67,9 @@ void wav_set_allocator(void *context, WAV_CONST WavAllocFuncs *funcs)
     g_alloc_funcs = funcs;
 }
 
-void* wav_aligned_alloc(size_t alignment, size_t size)
+void* wav_malloc(size_t size)
 {
-    return g_alloc_funcs->aligned_alloc(g_alloc_context, alignment, size);
+    return g_alloc_funcs->malloc(g_alloc_context, size);
 }
 
 void* wav_realloc(void *p, size_t size)
@@ -94,7 +87,7 @@ void wav_free(void *p)
 char* wav_strdup(WAV_CONST char *str)
 {
     size_t len = strlen(str) + 1;
-    void *new = WAV_NEW(char, len);
+    void *new = wav_malloc(len);
     if (new == NULL)
         return NULL;
 
@@ -103,7 +96,7 @@ char* wav_strdup(WAV_CONST char *str)
 
 char* wav_strndup(WAV_CONST char *str, size_t n)
 {
-    char *result = WAV_NEW(char, n + 1);
+    char *result = wav_malloc(n + 1);
     if (result == NULL)
         return NULL;
 
@@ -124,7 +117,7 @@ int wav_vasprintf(char **str, WAV_CONST char *format, va_list args)
         return size;
     }
 
-    *str = WAV_NEW(char, (size_t)size + 1);
+    *str = wav_malloc((size_t)size + 1);
     if (*str == NULL)
         return -1;
 
@@ -478,7 +471,7 @@ void wav_finalize(WavFile* self)
 
 WavFile* wav_open(WAV_CONST char* filename, WAV_CONST char* mode)
 {
-    WavFile* self = WAV_NEW(WavFile);
+    WavFile* self = wav_malloc(sizeof(WavFile));
     if (self == NULL) {
         return NULL;
     }
