@@ -454,7 +454,7 @@ void wav_init(WavFile* self, WAV_CONST char* filename, WAV_CONST char* mode)
     memcpy(self->format_chunk.body.sub_format, default_sub_format, 16);
 
     self->data_chunk.header.id = WAV_DATA_CHUNK_ID;
-    self->data_chunk.offset = self->format_chunk.offset + self->format_chunk.header.size;
+    self->data_chunk.offset = self->format_chunk.offset + self->format_chunk.header.size + sizeof(WavChunkHeader);
 
     wav_write_header(self);
 }
