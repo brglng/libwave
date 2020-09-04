@@ -715,7 +715,9 @@ void wav_set_num_channels(WavFile* self, WavU16 num_channels)
         return;
     }
 
+    WavU16 old_num_channels = self->format_chunk.body.num_channels;
     self->format_chunk.body.num_channels = num_channels;
+    self->format_chunk.body.block_align /= old_num_channels * num_channels;
     self->format_chunk.body.avg_bytes_per_sec = self->format_chunk.body.block_align * self->format_chunk.body.sample_rate;
 
     wav_write_header(self);
