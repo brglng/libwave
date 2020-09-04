@@ -327,10 +327,11 @@ void wav_parse_header(WavFile* self)
 
 void wav_write_header(WavFile* self)
 {
-    self->riff_chunk.size = sizeof(self->riff_chunk.wave_id) +
-                              self->format_chunk.header.id == 0 ? 0 : sizeof(WavChunkHeader) + self->format_chunk.header.size +
-                              self->fact_chunk.header.id == 0 ? 0 : sizeof(WavChunkHeader) + self->fact_chunk.header.size +
-                              self->data_chunk.header.id == 0 ? 0 : sizeof(WavChunkHeader) + self->data_chunk.header.size;
+    self->riff_chunk.size =
+        sizeof(self->riff_chunk.wave_id) +
+        self->format_chunk.header.id == 0 ? 0 : sizeof(WavChunkHeader) + self->format_chunk.header.size +
+        self->fact_chunk.header.id == 0 ? 0 : sizeof(WavChunkHeader) + self->fact_chunk.header.size +
+        self->data_chunk.header.id == 0 ? 0 : sizeof(WavChunkHeader) + self->data_chunk.header.size;
 
     if (fseek(self->fp, 0, SEEK_SET) != 0) {
         wav_err_set(WAV_ERR_OS, "fseek() failed [errno %d: %s]", errno, strerror(errno));
@@ -342,7 +343,7 @@ void wav_write_header(WavFile* self)
     }
 
     if (self->format_chunk.header.id == WAV_FORMAT_CHUNK_ID) {
-        if (fseek(self->fp, (long)self->format_chunk.offset, SEEK_SET) != 0) {
+        if (fseek(self->fp, (long)(self->format_chunk.offset - sizeof(WavChunkHeader)), SEEK_SET) != 0) {
             wav_err_set(WAV_ERR_OS, "fseek() failed [errno %d: %s]", errno, strerror(errno));
             return;
         }
@@ -357,7 +358,7 @@ void wav_write_header(WavFile* self)
     }
 
     if (self->fact_chunk.header.id == WAV_FACT_CHUNK_ID) {
-        if (fseek(self->fp, (long)self->fact_chunk.offset, SEEK_SET) != 0) {
+        if (fseek(self->fp, (long)(self->fact_chunk.offset - sizeof(WavChunkHeader)), SEEK_SET) != 0) {
             wav_err_set(WAV_ERR_OS, "fseek() failed [errno %d: %s]", errno, strerror(errno));
             return;
         }
@@ -372,7 +373,7 @@ void wav_write_header(WavFile* self)
     }
 
     if (self->data_chunk.header.id == WAV_DATA_CHUNK_ID) {
-        if (fseek(self->fp, (long)self->data_chunk.offset, SEEK_SET) != 0) {
+        if (fseek(self->fp, (long)(self->data_chunk.offset - sizeof(WavChunkHeader)), SEEK_SET) != 0) {
             wav_err_set(WAV_ERR_OS, "fseek() failed [errno %d: %s]", errno, strerror(errno));
             return;
         }
