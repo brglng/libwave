@@ -469,23 +469,6 @@ void wav_finalize(WavFile* self)
         return;
     }
 
-    if ((strncmp(self->mode, "wb", 2) == 0 ||
-         strncmp(self->mode, "wb+", 3) == 0 ||
-         strncmp(self->mode, "wbx", 3) == 0 ||
-         strncmp(self->mode, "wb+x", 4) == 0 ||
-         strncmp(self->mode, "ab", 2) == 0 ||
-         strncmp(self->mode, "ab+", 3) == 0) &&
-        (self->data_chunk.header.size & 1) != 0 &&
-        wav_eof(self))
-    {
-        char padding = 0;
-        ret = (int)fwrite(&padding, sizeof(padding), 1, self->fp);
-        if (ret != 1) {
-            fprintf(stderr, "[WARN] [libwav] fwrite to %s failed [errno %d: %s]", self->filename, errno, strerror(errno));
-            return;
-        }
-    }
-
     ret = fclose(self->fp);
     if (ret != 0) {
         fprintf(stderr, "[WARN] [libwav] fclose failed with code %d [errno %d: %s]", ret, errno, strerror(errno));
