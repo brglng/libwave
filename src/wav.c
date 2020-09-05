@@ -680,6 +680,9 @@ void wav_set_format(WavFile* self, WavU16 format)
         return;
     }
 
+    if (format == self->format_chunk.body.format_tag)
+        return;
+
     self->format_chunk.body.format_tag = format;
     if (format != WAV_FORMAT_PCM && format != WAV_FORMAT_EXTENSIBLE) {
         self->format_chunk.body.ext_size = 0;
@@ -716,8 +719,11 @@ void wav_set_num_channels(WavFile* self, WavU16 num_channels)
     }
 
     WavU16 old_num_channels = self->format_chunk.body.num_channels;
+    if (num_channels == old_num_channels)
+        return;
+
     self->format_chunk.body.num_channels = num_channels;
-    self->format_chunk.body.block_align /= old_num_channels * num_channels;
+    self->format_chunk.body.block_align = self->format_chunk.body.block_align / old_num_channels * num_channels;
     self->format_chunk.body.avg_bytes_per_sec = self->format_chunk.body.block_align * self->format_chunk.body.sample_rate;
 
     wav_write_header(self);
@@ -729,6 +735,9 @@ void wav_set_sample_rate(WavFile* self, WavU32 sample_rate)
         wav_err_set_literal(WAV_ERR_MODE, "This WavFile is not writable");
         return;
     }
+
+    if (sample_rate == self->format_chunk.body.sample_rate)
+        return;
 
     self->format_chunk.body.sample_rate = sample_rate;
     self->format_chunk.body.avg_bytes_per_sec = self->format_chunk.body.block_align * self->format_chunk.body.sample_rate;
