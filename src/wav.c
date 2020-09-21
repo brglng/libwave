@@ -686,7 +686,7 @@ void wav_set_format(WavFile* self, WavU16 format)
     self->format_chunk.body.format_tag = format;
     if (format != WAV_FORMAT_PCM && format != WAV_FORMAT_EXTENSIBLE) {
         self->format_chunk.body.ext_size = 0;
-        self->format_chunk.header.size = (WavU32)((WavUIntPtr)&self->format_chunk.body.valid_bits_per_sample - (WavUIntPtr)&self->format_chunk.body);
+        self->format_chunk.header.size = (WavU32)((WavUIntPtr)&self->format_chunk.body.ext_size - (WavUIntPtr)&self->format_chunk.body);
     } else if (format == WAV_FORMAT_EXTENSIBLE) {
         self->format_chunk.body.ext_size = 22;
         self->format_chunk.header.size = sizeof(WavFormatChunk) - sizeof(WavChunkHeader);
