@@ -15,22 +15,22 @@ files.
 Use `FetchContent`:
 
     include(FetchContent)
-    FetchContent_Declare(naivedsp
+    FetchContent_Declare(libwav
         GIT_REPOSITORY    "https://github.com/brglng/libwav.git" 
         GIT_SHALLOW       ON
         )
-    FetchContent_MakeAvailable(naivedsp)
+    FetchContent_MakeAvailable(libwav)
     add_executable(yourprogram yourprogram.c)
     target_link_libraries(yourprogram wav::wav)
 
 Use `add_subdirectory`:
 
-    add_subdirectory(naivedsp)
+    add_subdirectory(libwav)
     add_executable(yourprogram yourprogram.c)
     target_link_libraries(yourprogram wav::wav)
 
 Use `find_package`:
 
-    find_package(naivedsp)
+    find_package(wav)
     add_executable(yourprogram yourprogram.c)
     target_link_libraries(yourprogram wav::wav)
