@@ -5,27 +5,32 @@ files.
 
 ## Build
 
-Linux/Cygwin/OS X using makefiles:
+    mkdir build
+    cd build
+    cmake [-DCMAKE_BUILD_TYPE=<Debug|Release|RelWithDebInfo>] ..
+    make
 
-```sh
-mkdir build
-cd build
-cmake [-DCMAKE_BUILD_TYPE=<Debug|Release|RelWithDebInfo|MinSizeRel>] -G "Unix Makefiles" ..
-make
-```
+## CMake Support
 
-Windows using Visual Studio 2013:
+Use `FetchContent`:
 
-```sh
-mkdir build
-cd build
-cmake [-DCMAKE_BUILD_TYPE=<Debug|Release|RelWithDebInfo|MinSizeRel>] -G "Visual Studio 12" ..
-```
+    include(FetchContent)
+    FetchContent_Declare(naivedsp
+        GIT_REPOSITORY    "https://github.com/brglng/libwav.git" 
+        GIT_SHALLOW       ON
+        )
+    FetchContent_MakeAvailable(naivedsp)
+    add_executable(yourprogram yourprogram.c)
+    target_link_libraries(yourprogram wav::wav)
 
-OS X using Xcode:
+Use `add_subdirectory`:
 
-```sh
-mkdir build
-cd build
-cmake [-DCMAKE_BUILD_TYPE=<Debug|Release|RelWithDebInfo|MinSizeRel>] -G Xcode ..
-```
+    add_subdirectory(naivedsp)
+    add_executable(yourprogram yourprogram.c)
+    target_link_libraries(yourprogram wav::wav)
+
+Use `find_package`:
+
+    find_package(naivedsp)
+    add_executable(yourprogram yourprogram.c)
+    target_link_libraries(yourprogram wav::wav)
