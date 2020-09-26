@@ -3,12 +3,22 @@
 libwav is a simple and tiny C library for reading or writing PCM wave (.wav)
 files.
 
-## Build
+## Build and Install
+
+On Linux and macOS:
 
     mkdir build
     cd build
     cmake [-DCMAKE_BUILD_TYPE=<Debug|Release|RelWithDebInfo>] ..
     make
+    sudo make install
+
+On Windows:
+
+    mkdir build
+    cd build
+    cmake ..
+    cmake --build .
 
 ## CMake Support
 
