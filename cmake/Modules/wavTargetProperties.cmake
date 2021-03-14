@@ -19,7 +19,6 @@ elseif(${CMAKE_C_COMPILER_ID} MATCHES "^(GNU|.*Clang)$")
                -Wformat=2
                -Wmissing-include-dirs
                -Wnarrowing
-               -Wsign-conversion
                -Wpointer-arith
                -Wshadow
                -Wuninitialized
