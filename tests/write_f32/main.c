@@ -15,7 +15,7 @@ int main(void)
     generate_sine_wave(buf, 44100, 10 * 44100);
     WavFile *fp = wav_open("out.wav", "wb");
     wav_set_format(fp, WAV_FORMAT_IEEE_FLOAT);
-    wav_set_sample_size(fp, sizeof(float));
+    /* wav_set_sample_size(fp, sizeof(float)); */
     wav_set_num_channels(fp, 1);
     wav_set_sample_rate(fp, 44100);
     wav_write(fp, buf, 10 * 44100);

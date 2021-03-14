@@ -695,11 +695,9 @@ void wav_set_format(WavFile* self, WavU16 format)
     if (format == WAV_FORMAT_ALAW || format == WAV_FORMAT_MULAW) {
         self->format_chunk.body.bits_per_sample = 8;
     } else if (format == WAV_FORMAT_IEEE_FLOAT) {
-        if (self->format_chunk.body.block_align != 4 && self->format_chunk.body.block_align != 8) {
-            self->format_chunk.body.block_align = 4;
-        }
-        if (self->format_chunk.body.bits_per_sample > 8 * self->format_chunk.body.block_align) {
-            self->format_chunk.body.bits_per_sample = 8 * self->format_chunk.body.block_align;
+        WavU16 sample_size = wav_get_sample_size(self);
+        if (sample_size != 4 && sample_size != 8) {
+            wav_set_sample_size(self, 4);
         }
     }
 
