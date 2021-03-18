@@ -26,15 +26,15 @@ set(${PROJECT_NAME}_VERSION ${PROJECT_VERSION})
 
 # CMake variables that affects building
 if(${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
-    if(NOT DEFINED CMAKE_BUILD_TYPE)
+    if(CMAKE_BUILD_TYPE STREQUAL "")
         set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
     endif()
 
-    if(NOT DEFINED BUILD_SHARED_LIBS)
+    if(BUILD_SHARED_LIBS STREQUAL "")
         set(BUILD_SHARED_LIBS ON CACHE BOOL "enable building of shared libraries instead of static ones" FORCE)
     endif()
 
-    if(NOT DEFINED CMAKE_POSITION_INDEPENDENT_CODE)
+    if(CMAKE_POSITION_INDEPENDENT_CODE STREQUAL "")
         set(CMAKE_POSITION_INDEPENDENT_CODE ON CACHE BOOL "enable position independent code" FORCE)
     endif()
 
