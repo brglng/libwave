@@ -1,31 +1,11 @@
 cmake_minimum_required(VERSION 3.14)
-if(POLICY CMP0025)
-    cmake_policy(SET CMP0025 NEW)
-endif()
-if(POLICY CMP0048)
-    cmake_policy(SET CMP0048 NEW)
-endif()
-if(POLICY CMP0054)
-    cmake_policy(SET CMP0054 NEW)
-endif()
-if(POLICY CMP0077)
-    cmake_policy(SET CMP0077 NEW)
-endif()
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 
 # Project Information
-project(wav C)
-set(PROJECT_VERSION_MAJOR 0)
-set(PROJECT_VERSION_MINOR 1)
-set(PROJECT_VERSION_PATCH 0)
-set(PROJECT_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
-set(${PROJECT_NAME}_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
-set(${PROJECT_NAME}_VERSION_MINOR ${PROJECT_VERSION_MINOR})
-set(${PROJECT_NAME}_VERSION_PATCH ${PROJECT_VERSION_PATCH})
-set(${PROJECT_NAME}_VERSION ${PROJECT_VERSION})
+project(wav C VERSION "0.1.0")
 
 # CMake variables that affects building
-if(${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
+if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
     if(CMAKE_BUILD_TYPE STREQUAL "")
         set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
     endif()
@@ -66,7 +46,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE
     $<$<CONFIG:RELWITHDEBINFO>:${wav_compile_options_release}>
     )
 
-if(BUILD_TESTING)
+if(BUILD_TESTING AND "${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
     add_subdirectory(tests/write_f32)
 endif()
 
@@ -110,12 +90,9 @@ install(
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
     )
   
-if(${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
+if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
     set(CPACK_PACKAGE_NAME "wav")
     set(CPACK_GENERATOR "TXZ")
-    set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
-    set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
-    set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
     set(CPACK_SOURCE_IGNORE_FILES
         "/\\\\.git/"
         "\\\\.git.*"
