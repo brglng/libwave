@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 
 # Project Information
-project(wav C VERSION "0.1.0")
+project(wav VERSION "0.1.0")
 
 # CMake variables that affects building
 if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
