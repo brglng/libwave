@@ -229,7 +229,8 @@ typedef struct {
 struct _WavFile {
     FILE*               fp;
     char*               filename;
-    WAV_CONST char*     mode;
+    WavU32              mode;
+    WavBool             is_a_new_file;
 
     WavMasterChunk      riff_chunk;
     WavFormatChunk      format_chunk;
@@ -377,45 +378,39 @@ void wav_write_header(WavFile* self)
     }
 }
 
-void wav_init(WavFile* self, WAV_CONST char* filename, WAV_CONST char* mode)
+void wav_init(WavFile* self, WAV_CONST char* filename, WavU32 mode)
 {
     memset(self, 0, sizeof(WavFile));
 
-    if (strncmp(mode, "r", 1) == 0 || strncmp(mode, "rb", 2) == 0) {
-        self->mode = "rb";
-    } else if (strncmp(mode, "r+", 2) == 0 || strncmp(mode, "rb+", 3) == 0 || strncmp(mode, "r+b", 3) == 0) {
-        self->mode = "rb+";
-    } else if (strncmp(mode, "w", 1) == 0 || strncmp(mode, "wb", 2) == 0) {
-        self->mode = "wb";
-    } else if (strncmp(mode, "w+", 2) == 0 || strncmp(mode, "wb+", 3) == 0 || strncmp(mode, "w+b", 3) == 0) {
-        self->mode = "wb+";
-    } else if (strncmp(mode, "wx", 2) == 0 || strncmp(mode, "wbx", 3) == 0) {
-        self->mode = "wbx";
-    } else if (strncmp(mode, "w+x", 3) == 0 || strncmp(mode, "wb+x", 4) == 0 || strncmp(mode, "w+bx", 4) == 0) {
-        self->mode = "wb+x";
-    } else if (strncmp(mode, "a", 1) == 0 || strncmp(mode, "ab", 2) == 0) {
-        self->mode = "ab";
-    } else if (strncmp(mode, "a+", 2) == 0 || strncmp(mode, "ab+", 3) == 0 || strncmp(mode, "a+b", 3) == 0) {
-        self->mode = "ab+";
+    if (mode & WAV_OPEN_READ) {
+        if ((mode & WAV_OPEN_WRITE) || (mode & WAV_OPEN_APPEND)) {
+            self->fp = fopen(filename, "wb+");
+        } else {
+            self->fp = fopen(filename, "rb");
+        }
     } else {
-        wav_err_set(WAV_ERR_MODE, "Mode is incorrect: %s", mode);
-        return;
+        if ((mode & WAV_OPEN_WRITE) || (mode & WAV_OPEN_APPEND)) {
+            self->fp = fopen(filename, "wb+");
+        } else {
+            wav_err_set_literal(WAV_ERR_PARAM, "Invalid mode");
+            return;
+        }
     }
 
-    self->filename = wav_strdup(filename);
-
-    self->fp = fopen(filename, self->mode);
     if (self->fp == NULL) {
         wav_err_set(WAV_ERR_OS, "Error when opening %s [errno %d: %s]", filename, errno, strerror(errno));
         return;
     }
 
-    if (self->mode[0] == 'r') {
+    self->filename = wav_strdup(filename);
+    self->mode = mode;
+
+    if (!(self->mode & WAV_OPEN_WRITE) && !(self->mode & WAV_OPEN_APPEND)) {
         wav_parse_header(self);
         return;
     }
 
-    if (self->mode[0] == 'a') {
+    if (self->mode & WAV_OPEN_APPEND) {
         wav_parse_header(self);
         if (g_err.code == WAV_OK) {
             // If the header parsing was successful, return immediately.
@@ -424,6 +419,7 @@ void wav_init(WavFile* self, WAV_CONST char* filename, WAV_CONST char* mode)
             // Header parsing failed. Regard it as a new file.
             wav_err_clear();
             rewind(self->fp);
+            self->is_a_new_file = WAV_TRUE;
         }
     }
 
@@ -469,7 +465,7 @@ void wav_finalize(WavFile* self)
     }
 }
 
-WavFile* wav_open(WAV_CONST char* filename, WAV_CONST char* mode)
+WavFile* wav_open(WAV_CONST char* filename, WavU32 mode)
 {
     WavFile* self = wav_malloc(sizeof(WavFile));
     if (self == NULL) {
@@ -487,7 +483,7 @@ void wav_close(WavFile* self)
     wav_free(self);
 }
 
-WavFile* wav_reopen(WavFile* self, WAV_CONST char* filename, WAV_CONST char* mode)
+WavFile* wav_reopen(WavFile* self, WAV_CONST char* filename, WavU32 mode)
 {
     wav_finalize(self);
     wav_init(self, filename, mode);
@@ -501,7 +497,7 @@ size_t wav_read(WavFile* self, void *buffer, size_t count)
     size_t sample_size = wav_get_sample_size(self);
     size_t len_remain;
 
-    if (strncmp(self->mode, "wb", 2) == 0 || strncmp(self->mode, "wbx", 3) == 0 || strncmp(self->mode, "ab", 2) == 0) {
+    if (!(self->mode & WAV_OPEN_READ)) {
         wav_err_set_literal(WAV_ERR_MODE, "This WavFile is not readable");
         return 0;
     }
@@ -571,7 +567,7 @@ size_t wav_write(WavFile* self, WAV_CONST void *buffer, size_t count)
     WavU16 n_channels = wav_get_num_channels(self);
     size_t sample_size = wav_get_sample_size(self);
 
-    if (strncmp(self->mode, "rb", 2) == 0) {
+    if (!(self->mode & WAV_OPEN_WRITE) && !(self->mode & WAV_OPEN_APPEND)) {
         wav_err_set_literal(WAV_ERR_MODE, "This WavFile is not writable");
         return 0;
     }
@@ -588,6 +584,13 @@ size_t wav_write(WavFile* self, WAV_CONST void *buffer, size_t count)
     wav_tell(self);
     if (g_err.code != WAV_OK) {
         return 0;
+    }
+
+    if (!(self->mode & WAV_OPEN_READ) && !(self->mode & WAV_OPEN_WRITE)) {
+        wav_seek(self, 0, SEEK_END);
+        if (g_err.code != WAV_OK) {
+            return 0;
+        }
     }
 
     write_count = fwrite(buffer, sample_size, n_channels * count, self->fp);
@@ -634,7 +637,7 @@ int wav_seek(WavFile* self, long int offset, int origin)
         offset += (long)length;
     }
 
-    /* POSIX allows seeking beyond file end */
+    /* POSIX allows seeking beyond end of file */
     if (offset >= 0) {
         offset *= self->format_chunk.body.block_align;
     } else {
@@ -675,7 +678,7 @@ int wav_flush(WavFile* self)
 
 void wav_set_format(WavFile* self, WavU16 format)
 {
-    if (self->mode[0] == 'r') {
+    if (!(self->mode & WAV_OPEN_WRITE) && !((self->mode & WAV_OPEN_APPEND) && self->is_a_new_file && self->data_chunk.header.size == 0)) {
         wav_err_set_literal(WAV_ERR_MODE, "This WavFile is not writable");
         return;
     }
@@ -709,7 +712,7 @@ void wav_set_format(WavFile* self, WavU16 format)
 
 void wav_set_num_channels(WavFile* self, WavU16 num_channels)
 {
-    if (self->mode[0] == 'r') {
+    if (!(self->mode & WAV_OPEN_WRITE) && !((self->mode & WAV_OPEN_APPEND) && self->is_a_new_file && self->data_chunk.header.size == 0)) {
         wav_err_set_literal(WAV_ERR_MODE, "This WavFile is not writable");
         return;
     }
@@ -732,7 +735,7 @@ void wav_set_num_channels(WavFile* self, WavU16 num_channels)
 
 void wav_set_sample_rate(WavFile* self, WavU32 sample_rate)
 {
-    if (self->mode[0] == 'r') {
+    if (!(self->mode & WAV_OPEN_WRITE) && !((self->mode & WAV_OPEN_APPEND) && self->is_a_new_file && self->data_chunk.header.size == 0)) {
         wav_err_set_literal(WAV_ERR_MODE, "This WavFile is not writable");
         return;
     }
@@ -748,7 +751,7 @@ void wav_set_sample_rate(WavFile* self, WavU32 sample_rate)
 
 void wav_set_valid_bits_per_sample(WavFile* self, WavU16 bits)
 {
-    if (self->mode[0] == 'r') {
+    if (!(self->mode & WAV_OPEN_WRITE) && !((self->mode & WAV_OPEN_APPEND) && self->is_a_new_file && self->data_chunk.header.size == 0)) {
         wav_err_set_literal(WAV_ERR_MODE, "This WavFile is not writable");
         return;
     }
@@ -775,7 +778,7 @@ void wav_set_valid_bits_per_sample(WavFile* self, WavU16 bits)
 
 void wav_set_sample_size(WavFile* self, size_t sample_size)
 {
-    if (self->mode[0] == 'r') {
+    if (!(self->mode & WAV_OPEN_WRITE) && !((self->mode & WAV_OPEN_APPEND) && self->is_a_new_file && self->data_chunk.header.size == 0)) {
         wav_err_set_literal(WAV_ERR_MODE, "This WavFile is not writable");
         return;
     }
@@ -797,7 +800,7 @@ void wav_set_sample_size(WavFile* self, size_t sample_size)
 
 void wav_set_channel_mask(WavFile* self, WavU32 channel_mask)
 {
-    if (self->mode[0] == 'r') {
+    if (!(self->mode & WAV_OPEN_WRITE) && !((self->mode & WAV_OPEN_APPEND) && self->is_a_new_file && self->data_chunk.header.size == 0)) {
         wav_err_set_literal(WAV_ERR_MODE, "This WavFile is not writable");
         return;
     }
@@ -814,7 +817,7 @@ void wav_set_channel_mask(WavFile* self, WavU32 channel_mask)
 
 void wav_set_sub_format(WavFile* self, WavU16 sub_format)
 {
-    if (self->mode[0] == 'r') {
+    if (!(self->mode & WAV_OPEN_WRITE) && !((self->mode & WAV_OPEN_APPEND) && self->is_a_new_file && self->data_chunk.header.size == 0)) {
         wav_err_set_literal(WAV_ERR_MODE, "This WavFile is not writable");
         return;
     }

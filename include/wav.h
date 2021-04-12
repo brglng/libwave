@@ -60,12 +60,18 @@ typedef unsigned int        WavUIntPtr;
 #define WAV_THREAD_LOCAL __thread
 #endif
 
+typedef int                 WavBool;
 typedef signed char         WavI8;
 typedef unsigned char       WavU8;
 typedef short               WavI16;
 typedef unsigned short      WavU16;
 typedef int                 WavI32;
 typedef unsigned int        WavU32;
+
+enum {
+    WAV_FALSE,
+    WAV_TRUE
+};
 
 /* wave file format codes */
 #define WAV_FORMAT_PCM          ((WavU16)0x0001)
@@ -108,6 +114,10 @@ int wav_asprintf(char **str, WAV_CONST char *format, ...);
 WAV_CONST WavErr* wav_err(void);
 void wav_err_clear(void);
 
+#define WAV_OPEN_READ       1
+#define WAV_OPEN_WRITE      2
+#define WAV_OPEN_APPEND     4
+
 typedef struct _WavFile WavFile;
 
 /** Open a wav file
@@ -116,9 +126,9 @@ typedef struct _WavFile WavFile;
  *  @param mode         The mode for open (same as {fopen})
  *  @return             NULL if the memory allocation for the {WavFile} object failed. Non-NULL means the memory allocation succeeded, but there can be other errors, which can be obtained using {wav_errno} or {wav_error}.
  */
-WavFile* wav_open(WAV_CONST char* filename, WAV_CONST char* mode);
+WavFile* wav_open(WAV_CONST char* filename, WavU32 mode);
 void     wav_close(WavFile* self);
-WavFile* wav_reopen(WavFile* self, WAV_CONST char* filename, WAV_CONST char* mode);
+WavFile* wav_reopen(WavFile* self, WAV_CONST char* filename, WavU32 mode);
 
 /** Read a block of samples from the wav file
  *
