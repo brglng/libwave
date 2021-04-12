@@ -33,6 +33,7 @@ elseif(${CMAKE_C_COMPILER_ID} MATCHES "^(GNU|.*Clang)$")
                -Werror=implicit-int
                -Werror=init-self
                -Werror=incompatible-pointer-types
+               -Werror=int-conversion
                -Werror=return-type
                -Werror=strict-prototypes
                )

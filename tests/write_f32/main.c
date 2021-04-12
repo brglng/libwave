@@ -13,7 +13,7 @@ int main(void)
 {
     float *buf = malloc(sizeof(float) * 10 * 44100);
     generate_sine_wave(buf, 44100, 10 * 44100);
-    WavFile *fp = wav_open("out.wav", "wb");
+    WavFile *fp = wav_open("out.wav", WAV_OPEN_WRITE);
     wav_set_format(fp, WAV_FORMAT_IEEE_FLOAT);
     /* wav_set_sample_size(fp, sizeof(float)); */
     wav_set_num_channels(fp, 1);
