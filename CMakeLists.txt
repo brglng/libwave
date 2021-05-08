@@ -10,11 +10,11 @@ if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
         set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
     endif()
 
-    if(BUILD_SHARED_LIBS STREQUAL "")
+    if(NOT DEFINED BUILD_SHARED_LIBS)
         set(BUILD_SHARED_LIBS ON CACHE BOOL "enable building of shared libraries instead of static ones" FORCE)
     endif()
 
-    if(CMAKE_POSITION_INDEPENDENT_CODE STREQUAL "")
+    if(NOT DEFINED CMAKE_POSITION_INDEPENDENT_CODE)
         set(CMAKE_POSITION_INDEPENDENT_CODE ON CACHE BOOL "enable position independent code" FORCE)
     endif()
 
