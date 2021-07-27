@@ -6,7 +6,7 @@
 
 #include "wav.h"
 
-#if defined(__x86_64) || defined(__amd64) || defined(__i386__) || defined(__x86_64__) || defined(__LITTLE_ENDIAN__) || defined(CORE_CM7)
+#if defined(__x86_64) || defined(__amd64) || defined(__i386__) || defined(__x86_64__) || defined(__LITTLE_ENDIAN__) || defined(CORE_CM7) || defined(__arm__)
 #define WAV_ENDIAN_LITTLE 1
 #elif defined(__BIG_ENDIAN__)
 #define WAV_ENDIAN_BIG 1
