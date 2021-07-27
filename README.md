@@ -1,4 +1,4 @@
-Build support for ARM platforms added in th fork
+This fork adds build support for ARM platforms
 --
 # libwav
 
