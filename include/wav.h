@@ -20,6 +20,8 @@ extern "C" {
 
 #include <stdarg.h>
 #include <stddef.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 #if !defined(_MSC_VER) || _MSC_VER >= 1800
 #define WAV_INLINE static inline
@@ -29,25 +31,6 @@ extern "C" {
 #define WAV_INLINE static __inline
 #define WAV_CONST
 #define WAV_RESTRICT __restrict
-#endif
-
-#if defined(__APPLE__) || defined(_MSC_VER)
-typedef long long           WavI64;
-typedef unsigned long long  WavU64;
-typedef long long           WavIntPtr;
-typedef unsigned long long  WavUIntPtr;
-#else
-#if defined(_WIN64) || defined(__x86_64) || defined(__amd64)
-typedef long                WavI64;
-typedef unsigned long       WavU64;
-typedef long                WavIntPtr;
-typedef unsigned long       WavUIntPtr;
-#else
-typedef long long           WavI64;
-typedef unsigned long long  WavU64;
-typedef int                 WavIntPtr;
-typedef unsigned int        WavUIntPtr;
-#endif
 #endif
 
 #if defined(__cplusplus) && __cplusplus >= 201103L
@@ -60,13 +43,16 @@ typedef unsigned int        WavUIntPtr;
 #define WAV_THREAD_LOCAL __thread
 #endif
 
-typedef int                 WavBool;
-typedef signed char         WavI8;
-typedef unsigned char       WavU8;
-typedef short               WavI16;
-typedef unsigned short      WavU16;
-typedef int                 WavI32;
-typedef unsigned int        WavU32;
+typedef bool       WavBool;
+typedef int8_t     WavI8;
+typedef uint8_t    WavU8;
+typedef int16_t    WavI16;
+typedef uint16_t   WavU16;
+typedef int32_t    WavI32;
+typedef uint32_t   WavU32;
+typedef int64_t    WavI64;
+typedef uint64_t   WavU64;
+typedef uintptr_t  WavUIntPtr;
 
 enum {
     WAV_FALSE,
