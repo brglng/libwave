@@ -8,7 +8,6 @@
  *
  *   - formats other than PCM, IEEE float and log-PCM
  *   - extra chunks after the data chunk
- *   - big endian platforms (might be supported in the future)
  */
 
 #ifndef __WAV_H__
