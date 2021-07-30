@@ -6,10 +6,11 @@
 
 #include "wav.h"
 
-#if defined(__x86_64) || defined(__amd64) || defined(__i386__) || defined(__x86_64__) || defined(__LITTLE_ENDIAN__) || defined(CORE_CM7) || defined(__arm__)
+#if defined(__x86_64) || defined(__amd64) || defined(__i386__) || defined(__x86_64__) || defined(__LITTLE_ENDIAN__) || defined(CORE_CM7) || \
+(defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__))
 #define WAV_ENDIAN_LITTLE 1
 #elif defined(__BIG_ENDIAN__)
-#define WAV_ENDIAN_BIG 1
+#define WAV_ENDIAN_LITTLE 0
 #endif
 
 #if WAV_ENDIAN_LITTLE
@@ -18,9 +19,7 @@
 #define WAV_FACT_CHUNK_ID       ((WavU32)'tcaf')
 #define WAV_DATA_CHUNK_ID       ((WavU32)'atad')
 #define WAV_WAVE_ID             ((WavU32)'EVAW')
-#endif
-
-#if WAV_ENDIAN_BIG
+#else
 #define WAV_RIFF_CHUNK_ID       ((WavU32)'RIFF')
 #define WAV_FORMAT_CHUNK_ID     ((WavU32)'fmt ')
 #define WAV_FACT_CHUNK_ID       ((WavU32)'fact')
