@@ -1,3 +1,7 @@
+---
+*This fork adds build support for ARM platforms and fixes compiling issues*
+---
+
 # libwav
 
 libwav is a simple and tiny C library for reading or writing PCM wave (.wav)
