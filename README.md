@@ -1,6 +1,6 @@
 ---
 
-*This fork adds build support for ARM platforms and fixes compiling issues*
+This fork adds build support for ARM platforms and fixes compiling issues
 
 ---
 
