@@ -1,6 +1,6 @@
-# libwav
+# libwave
 
-libwav is a simple and tiny C library for reading or writing PCM wave (.wav)
+libwave is a simple and tiny C library for reading or writing PCM wave (.wav)
 files.
 
 ## Build and Install
@@ -25,22 +25,22 @@ On Windows:
 Use `FetchContent`:
 
     include(FetchContent)
-    FetchContent_Declare(libwav
-        GIT_REPOSITORY    "https://github.com/brglng/libwav.git" 
+    FetchContent_Declare(libwave
+        GIT_REPOSITORY    "https://github.com/brglng/libwave.git" 
         GIT_SHALLOW       ON
         )
-    FetchContent_MakeAvailable(libwav)
+    FetchContent_MakeAvailable(libwave)
     add_executable(yourprogram yourprogram.c)
-    target_link_libraries(yourprogram wav::wav)
+    target_link_libraries(yourprogram wave::wave)
 
 Use `add_subdirectory`:
 
-    add_subdirectory(libwav)
+    add_subdirectory(libwave)
     add_executable(yourprogram yourprogram.c)
-    target_link_libraries(yourprogram wav::wav)
+    target_link_libraries(yourprogram wave::wave)
 
 Use `find_package`:
 
-    find_package(wav)
+    find_package(wave)
     add_executable(yourprogram yourprogram.c)
-    target_link_libraries(yourprogram wav::wav)
+    target_link_libraries(yourprogram wave::wave)
