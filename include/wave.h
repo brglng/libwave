@@ -37,12 +37,12 @@ extern "C" {
     #define WAVE_API __attribute__((visibility("default")))
 #endif
 
-#if defined(__APPLE__) || defined(_MSC_VER)
+#if defined(_WIN32) || defined(_WIN64) || defined(__APPLE__)
 typedef long long           WaveI64;
 typedef unsigned long long  WaveU64;
 typedef long long           WaveIntPtr;
 typedef unsigned long long  WaveUIntPtr;
-#elif defined(_WIN64) || defined(__x86_64) || defined(__amd64)
+#elif defined(__x86_64) || defined(__amd64)  || defined(__aarch64__)
 typedef long                WaveI64;
 typedef unsigned long       WaveU64;
 typedef long                WaveIntPtr;
@@ -50,8 +50,8 @@ typedef unsigned long       WaveUIntPtr;
 #else
 typedef long long           WaveI64;
 typedef unsigned long long  WaveU64;
-typedef int                 WaveIntPtr;
-typedef unsigned int        WaveUIntPtr;
+typedef long long           WaveIntPtr;
+typedef unsigned long long  WaveUIntPtr;
 #endif
 
 #if defined(__cplusplus) && __cplusplus >= 201103L
