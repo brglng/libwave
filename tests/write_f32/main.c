@@ -1,6 +1,6 @@
 #include <math.h>
 #include <stdlib.h>
-#include "wav.h"
+#include "wave.h"
 
 void generate_sine_wave(float *x, int sample_rate, int len)
 {
@@ -13,13 +13,13 @@ int main(void)
 {
     float *buf = malloc(sizeof(float) * 10 * 44100);
     generate_sine_wave(buf, 44100, 10 * 44100);
-    WavFile *fp = wav_open("out.wav", WAV_OPEN_WRITE);
-    wav_set_format(fp, WAV_FORMAT_IEEE_FLOAT);
-    /* wav_set_sample_size(fp, sizeof(float)); */
-    wav_set_num_channels(fp, 1);
-    wav_set_sample_rate(fp, 44100);
-    wav_write(fp, buf, 10 * 44100);
-    wav_close(fp);
+    WaveFile *fp = wave_open("out.wav", WAVE_OPEN_WRITE);
+    wave_set_format(fp, WAVE_FORMAT_IEEE_FLOAT);
+    /* wave_set_sample_size(fp, sizeof(float)); */
+    wave_set_num_channels(fp, 1);
+    wave_set_sample_rate(fp, 44100);
+    wave_write(fp, buf, 10 * 44100);
+    wave_close(fp);
     free(buf);
     return 0;
 }

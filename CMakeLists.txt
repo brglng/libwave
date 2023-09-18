@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 
 # Project Information
-project(wav VERSION "0.1.0")
+project(wave VERSION "0.1.0")
 
 # CMake variables that affects building
 if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -27,10 +27,10 @@ if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
 endif()
 
 include(GNUInstallDirs)
-include(wavTargetProperties)
+include(waveTargetProperties)
 
-add_library(${PROJECT_NAME} src/wav.c)
-add_library(wav::wav ALIAS wav)
+add_library(${PROJECT_NAME} src/wave.c)
+add_library(wave::wave ALIAS wave)
 target_include_directories(${PROJECT_NAME}
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -38,29 +38,29 @@ target_include_directories(${PROJECT_NAME}
     PRIVATE
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
     )
-target_compile_features(${PROJECT_NAME} PRIVATE ${wav_compile_features})
-target_compile_definitions(${PROJECT_NAME} PRIVATE ${wav_compile_definitions})
+target_compile_features(${PROJECT_NAME} PRIVATE ${wave_compile_features})
+target_compile_definitions(${PROJECT_NAME} PRIVATE ${wave_compile_definitions})
 target_compile_options(${PROJECT_NAME} PRIVATE
-    ${wav_c_flags}
-    $<$<CONFIG:RELEASE>:${wav_compile_options_release}>
-    $<$<CONFIG:RELWITHDEBINFO>:${wav_compile_options_release}>
+    ${wave_c_flags}
+    $<$<CONFIG:RELEASE>:${wave_compile_options_release}>
+    $<$<CONFIG:RELWITHDEBINFO>:${wave_compile_options_release}>
     )
 
 if(BUILD_TESTING AND "${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
     add_subdirectory(tests/write_f32)
 endif()
 
-export(TARGETS wav NAMESPACE wav FILE wavTargets.cmake)
+export(TARGETS wave NAMESPACE wave FILE waveTargets.cmake)
 
 install(
     TARGETS ${PROJECT_NAME}
-    EXPORT wavTargets
+    EXPORT waveTargets
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
 
-export(PACKAGE wav)
+export(PACKAGE wave)
 
 install(DIRECTORY include DESTINATION .)
 
@@ -69,29 +69,29 @@ install(
     DESTINATION ${CMAKE_INSTALL_DATADIR}/doc/${PROJECT_NAME}
     )
 
-install(EXPORT wavTargets
-    FILE wavTargets.cmake
-    NAMESPACE wav::
+install(EXPORT waveTargets
+    FILE waveTargets.cmake
+    NAMESPACE wave::
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
     )
 
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
-    wavConfigVersion.cmake
+    waveConfigVersion.cmake
     VERSION ${PACKAGE_VERSION}
     COMPATIBILITY SameMajorVersion
     )
 
-configure_file(cmake/wavConfig.cmake.in wavConfig.cmake @ONLY)
+configure_file(cmake/waveConfig.cmake.in waveConfig.cmake @ONLY)
 install(
     FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/wavConfig.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/wavConfigVersion.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/waveConfig.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/waveConfigVersion.cmake"
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
     )
   
 if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
-    set(CPACK_PACKAGE_NAME "wav")
+    set(CPACK_PACKAGE_NAME "wave")
     set(CPACK_GENERATOR "TXZ")
     set(CPACK_SOURCE_IGNORE_FILES
         "/\\\\.git/"
@@ -110,6 +110,7 @@ if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
         ".DS_Store"
         ".ccls"
         ".ccls-cache"
+        "compile_commands.json"
         )
     set(CPACK_SOURCE_GENERATOR "TXZ")
     include(CPack)
