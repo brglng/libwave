@@ -6,7 +6,7 @@
 
 #include "wave.h"
 
-#if defined(__x86_64) || defined(__amd64) || defined(__i386__) || defined(__x86_64__) || defined(__LITTLE_ENDIAN__) || defined(CORE_CM7)
+#if defined(__x86_64) || defined(__amd64) || defined(__i386__) || defined(__x86_64__) || defined(__LITTLE_ENDIAN__) || defined(CORE_CM7) || (defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__))
 #define WAVE_ENDIAN_LITTLE 1
 #define WAVE_ENDIAN_BIG 0
 #elif defined(__BIG_ENDIAN__)
