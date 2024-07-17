@@ -32,6 +32,8 @@
 
 WAVE_THREAD_LOCAL WaveErr g_err = {WAVE_OK, (char*)"", 1};
 
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+
 static void* wave_default_malloc(void *context, size_t size)
 {
     (void)context;
@@ -285,7 +287,7 @@ void wave_parse_header(WaveFile* self)
             case WAVE_FORMAT_CHUNK_ID:
                 self->format_chunk.header = header;
                 self->format_chunk.offset = (WaveU64)ftell(self->fp);
-                read_count = fread(&self->format_chunk.body, header.size, 1, self->fp);
+                read_count = fread(&self->format_chunk.body, MIN(header.size, sizeof(self->format_chunk.body)), 1, self->fp);
                 if (read_count != 1) {
                     wave_err_set_literal(WAVE_ERR_FORMAT, "Unexpected EOF");
                     return;
@@ -302,7 +304,7 @@ void wave_parse_header(WaveFile* self)
             case WAVE_FACT_CHUNK_ID:
                 self->fact_chunk.header = header;
                 self->fact_chunk.offset = (WaveU64)ftell(self->fp);
-                read_count = fread(&self->fact_chunk.body, header.size, 1, self->fp);
+                read_count = fread(&self->fact_chunk.body, MIN(header.size, sizeof(self->fact_chunk.body)), 1, self->fp);
                 if (read_count != 1) {
                     wave_err_set(WAVE_ERR_FORMAT, "Unexpected EOF");
                 }
