@@ -128,7 +128,7 @@ typedef struct _WaveFile WaveFile;
  *
  *  @param filename     The name of the wav file
  *  @param mode         The mode for open (same as {fopen})
- *  @return             NULL if the memory allocation for the {WaveFile} object failed. Non-NULL means the memory allocation succeeded, but there can be other errors, which can be obtained using {wave_errno} or {wave_error}.
+ *  @return             NULL if the memory allocation for the {WaveFile} object failed. Non-NULL means the memory allocation succeeded, but there can be other errors, which can be obtained using {wave_err}.
  */
 WAVE_API WaveFile* wave_open(WAVE_CONST char* filename, WaveU32 mode);
 WAVE_API void     wave_close(WaveFile* self);
@@ -177,7 +177,7 @@ WAVE_API int wave_flush(WaveFile* self);
  *
  *  @param self     The {WaveFile} object
  *  @param format   The format code, which should be one of `WAVE_FORMAT_*`
- *  @remarks        All data will be cleared after the call. {wave_errno} can be used to get the error code if there is an error.
+ *  @remarks        All data will be cleared after the call. {wave_err} can be used to get the error code if there is an error.
  */
 WAVE_API void wave_set_format(WaveFile* self, WaveU16 format);
 
@@ -185,7 +185,7 @@ WAVE_API void wave_set_format(WaveFile* self, WaveU16 format);
  *
  *  @param self             The {WaveFile} object
  *  @param num_channels     The number of channels
- *  @remarks                All data will be cleared after the call. {wave_errno} can be used to get the error code if there is an error.
+ *  @remarks                All data will be cleared after the call. {wave_err} can be used to get the error code if there is an error.
  */
 WAVE_API void wave_set_num_channels(WaveFile* self, WaveU16 num_channels);
 
@@ -193,7 +193,7 @@ WAVE_API void wave_set_num_channels(WaveFile* self, WaveU16 num_channels);
  *
  *  @param self             The {WaveFile} object
  *  @param sample_rate      The sample rate
- *  @remarks                All data will be cleared after the call. {wave_errno} can be used to get the error code if there is an error.
+ *  @remarks                All data will be cleared after the call. {wave_err} can be used to get the error code if there is an error.
  */
 WAVE_API void wave_set_sample_rate(WaveFile* self, WaveU32 sample_rate);
 
@@ -201,7 +201,7 @@ WAVE_API void wave_set_sample_rate(WaveFile* self, WaveU32 sample_rate);
  *
  *  @param self     The {WaveFile} object
  *  @param bits     The value of valid bits to set
- *  @remarks        If {bits} is 0 or larger than 8*{sample_size}, an error will occur. All data will be cleared after the call. {wave_errno} can be used to get the error code if there is an error.
+ *  @remarks        If {bits} is 0 or larger than 8*{sample_size}, an error will occur. All data will be cleared after the call. {wave_err} can be used to get the error code if there is an error.
  */
 WAVE_API void wave_set_valid_bits_per_sample(WaveFile* self, WaveU16 bits);
 
@@ -209,7 +209,7 @@ WAVE_API void wave_set_valid_bits_per_sample(WaveFile* self, WaveU16 bits);
  *
  *  @param self             The WaveeFile object
  *  @param sample_size      Number of bytes per sample
- *  @remarks                When this function is called, the {BitsPerSample} and {ValidBitsPerSample} fields in the wav file will be set to 8*{sample_size}. All data will be cleared after the call. {wave_errno} can be used to get the error code if there is an error.
+ *  @remarks                When this function is called, the {BitsPerSample} and {ValidBitsPerSample} fields in the wav file will be set to 8*{sample_size}. All data will be cleared after the call. {wave_err} can be used to get the error code if there is an error.
  */
 WAVE_API void wave_set_sample_size(WaveFile* self, size_t sample_size);
 
