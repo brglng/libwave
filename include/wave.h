@@ -31,7 +31,7 @@ extern "C" {
 #define WAVE_RESTRICT __restrict
 #endif
 
-#if defined(_MSV_VER)
+#if defined(_MSC_VER)
     #define WAVE_API __declspec(dllexport)
 #else
     #define WAVE_API __attribute__((visibility("default")))
