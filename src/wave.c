@@ -6,12 +6,19 @@
 
 #include "wave.h"
 
-#if defined(__x86_64) || defined(__amd64) || defined(__i386__) || defined(__x86_64__) || defined(__LITTLE_ENDIAN__) || defined(CORE_CM7) || (defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__))
+#define WAVE_ENDIAN_ORDER_LITTLE    0x41424344UL
+#define WAVE_ENDIAN_ORDER_BIG       0x44434241UL
+#define WAVE_ENDIAN_ORDER_PDP       0x42414443UL
+#define WAVE_ENDIAN_ORDER           'ABCD'
+
+#if WAVE_ENDIAN_ORDER == WAVE_ENDIAN_ORDER_LITTLE
 #define WAVE_ENDIAN_LITTLE 1
 #define WAVE_ENDIAN_BIG 0
-#elif defined(__BIG_ENDIAN__)
+#elif WAVE_ENDIAN_ORDER == WAVE_ENDIAN_ORDER_BIG
 #define WAVE_ENDIAN_LITTLE 0
 #define WAVE_ENDIAN_BIG 1
+#else
+#error "unsupported endianess"
 #endif
 
 #if WAVE_ENDIAN_LITTLE
