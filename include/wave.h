@@ -78,11 +78,27 @@ enum {
 };
 
 /* wave file format codes */
+
+// Windows already has these macros in mmreg.h
+#if !((defined(_WIN32) || defined(_WIN64)) && defined(WAVE_FORMAT_PCM))
 #define WAVE_FORMAT_PCM          ((WaveU16)0x0001)
+#endif
+
+#if !((defined(_WIN32) || defined(_WIN64)) && defined(WAVE_FORMAT_IEEE_FLOAT))
 #define WAVE_FORMAT_IEEE_FLOAT   ((WaveU16)0x0003)
+#endif
+
+#if !((defined(_WIN32) || defined(_WIN64)) && defined(WAVE_FORMAT_ALAW))
 #define WAVE_FORMAT_ALAW         ((WaveU16)0x0006)
+#endif
+
+#if !((defined(_WIN32) || defined(_WIN64)) && defined(WAVE_FORMAT_MULAW))
 #define WAVE_FORMAT_MULAW        ((WaveU16)0x0007)
+#endif
+
+#if !((defined(_WIN32) || defined(_WIN64)) && defined(WAVE_FORMAT_EXTENSIBLE))
 #define WAVE_FORMAT_EXTENSIBLE   ((WaveU16)0xfffe)
+#endif
 
 typedef enum {
     WAVE_OK,         /** no error */
